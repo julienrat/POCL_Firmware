@@ -1,0 +1,2179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>POCL</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--ink:#1d2433;--mute:#6b7280;--line:#e3e7ef;--pri:#2563eb;--pri2:#dbeafe;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:#0f172a;color:#fff;position:sticky;top:0;z-index:5;height:46px}
+.brand{font-size:18px;white-space:nowrap;display:flex;align-items:center;gap:10px}.logo{color:#38bdf8}
+.pdlogo{display:inline-block;background:url(logo.png) center/contain no-repeat;background-origin:content-box}
+.hlogo{width:78px;height:34px;padding:2px 5px;background-color:#fff;border-radius:7px;flex:none}
+footer{text-align:center;padding:18px 10px 26px;color:var(--mute);font-size:13px}.flogo{width:230px;height:102px}
+.pill{font-size:13px;padding:3px 10px;border-radius:99px;background:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+nav{display:flex;gap:4px;overflow-x:auto;padding:8px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:46px;z-index:4}
+nav button{border:0;background:none;padding:8px 12px;border-radius:8px;font-size:14px;white-space:nowrap;cursor:pointer;color:var(--ink)}
+nav button.on{background:var(--pri2);color:var(--pri);font-weight:600}
+main{max-width:1000px;margin:0 auto;padding:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+h2{font-size:17px;margin:0 0 10px}h3{font-size:15px;margin:14px 0 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:9px;cursor:pointer;font-size:14px;color:var(--ink);text-decoration:none;font-family:inherit}
+.btn:hover{border-color:#9db4e8}.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.bad{color:var(--bad)}.btn.sm{padding:4px 9px;font-size:13px}.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.row>*{min-width:0;max-width:100%}.between{justify-content:space-between}.top{align-items:flex-start}
+label.f{display:block;margin:12px 0 4px;font-weight:600;font-size:13px}
+input,select,textarea{font:inherit;padding:7px 9px;border:1px solid #cbd2df;border-radius:8px;background:#fff;color:var(--ink);max-width:100%}
+input[type=number]{width:96px}input[type=range]{padding:0;width:220px}input[type=color]{padding:2px;width:46px;height:34px}
+input[type=checkbox]{width:18px;height:18px;vertical-align:middle}
+.w{width:100%}textarea{width:100%;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.mute{color:var(--mute);font-size:13px}.big{font-size:30px;font-weight:700;line-height:1.15;word-break:break-word}
+.err{color:var(--bad);font-size:13px}.okc{color:var(--ok)}.warnc{color:var(--warn)}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;background:#eef2f7;font-size:12px;font-family:ui-monospace,monospace}
+.chip{display:inline-block;padding:4px 10px;border-radius:99px;border:1px solid var(--line);background:#fff;margin:3px 3px 3px 0;cursor:pointer;font-size:13px}
+.chip:hover{border-color:var(--pri)}
+.item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.tbl{overflow:auto;max-height:260px;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;font-size:12px}
+.tbl table{width:100%}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis}
+.lt th{background:#f8fafc}.tbl th{background:#f8fafc;position:sticky;top:0;cursor:pointer}.tbl th:hover{background:var(--pri2)}.tbl th.sel{background:var(--pri);color:#fff}
+.types{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.type{border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;background:#fff}
+.type:hover{border-color:var(--pri);box-shadow:0 0 0 3px var(--pri2)}.type .ic{font-size:28px}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:flex-start;justify-content:center;padding:20px 10px;overflow:auto;z-index:20}
+.modal .box{background:#fff;border-radius:14px;max-width:780px;width:100%;padding:16px;position:relative}
+.modal .box.wide{max-width:min(1280px,98vw)}
+.tblx{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.tblx table{width:100%}
+.tblx th,.tblx td{white-space:normal;max-width:320px;min-width:60px;word-break:break-word;vertical-align:top;overflow:visible}
+.tblx th{background:#f8fafc;cursor:pointer;position:sticky;top:0}.tblx th:hover{background:var(--pri2)}.tblx th.sel{background:var(--pri);color:#fff}
+.tblx th .srt{float:right;padding:0 3px;border-radius:4px;opacity:.6}.tblx th .srt:hover,.tblx th .srt.on{opacity:1;background:rgba(0,0,0,.08)}
+.tblx td{cursor:pointer}.tblx td:hover{outline:2px solid var(--pri);outline-offset:-2px}
+.tblx td.csel{background:#e0ecff}.tblx tr.rsel td{background:#fff4d6}.tblx tr.rsel td.csel{background:var(--pri);color:#fff;font-weight:700}
+.pager{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.hidden{display:none!important}
+.x{position:absolute;right:10px;top:6px;border:0;background:none;font-size:24px;cursor:pointer;color:var(--mute)}
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:10px 16px;border-radius:10px;opacity:0;transition:.3s;pointer-events:none;z-index:30;max-width:90vw}
+#toast.show{opacity:1}#toast.bad{background:var(--bad)}
+.steps{display:flex;gap:6px;margin:0 0 10px;font-size:13px;flex-wrap:wrap}.steps span{padding:3px 10px;border-radius:99px;background:#eef2f7}.steps span.on{background:var(--pri);color:#fff}
+.tree{font-family:ui-monospace,Menlo,monospace;font-size:13px;max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px}
+.tree ul{list-style:none;margin:0;padding-left:16px}.tree>ul{padding-left:0}
+.leaf{cursor:pointer;border-radius:4px;padding:0 4px}.leaf:hover{background:var(--pri2)}.leaf.sel{background:var(--pri);color:#fff}
+.k{color:#7c3aed}.vs{color:#059669}.vn{color:#2563eb}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.warnbox,.okbox,.infobox,.errbox{border-radius:8px;padding:8px 10px;font-size:13px;margin:6px 0}
+.warnbox{background:#fff7ed;border:1px solid #fed7aa}.okbox{background:#f0fdf4;border:1px solid #bbf7d0}
+.infobox{background:#eff6ff;border:1px solid #bfdbfe}.errbox{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.pts td{border:0;padding:3px}.pts input{width:92px}
+.svgbox svg{width:100%;height:auto;display:block}.svgbox.wide{overflow-x:auto}.svgbox.wide svg{min-width:720px}
+.sw{display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin:6px 12px 6px 0}
+.sticky{position:sticky;bottom:0;background:var(--bg);padding:10px 0;z-index:3}
+.val{font-size:24px;font-weight:700}
+.src{border-left:4px solid var(--pri)}
+code{font-size:12px;background:#f1f5f9;padding:1px 4px;border-radius:4px;word-break:break-all}
+details summary{cursor:pointer;color:var(--pri);font-size:13px;margin:8px 0}
+.steplist li{margin:6px 0}
+@media print{header,nav,.noprint,.btn{display:none!important}main{max-width:none;padding:0}.card{border:0}}
+</style>
+</head>
+<body>
+<header><div class="brand"><span class="pdlogo hlogo" role="img" aria-label="Les Petits Débrouillards" title="Les Petits Débrouillards — Aux sciences citoyen·ne·s !"></span><b id="hName">POCL</b></div><div id="hStatus" class="pill">connexion…</div></header>
+<nav id="tabs">
+<button data-tab="home">🏠 Tableau de bord</button>
+<button data-tab="data">📊 Données</button>
+<button data-tab="outs">⚙️ Sorties</button>
+<button data-tab="btns">🔘 Boutons</button>
+<button data-tab="wire">🔌 Câblage</button>
+<button data-tab="sys">📶 Réglages</button>
+</nav>
+<main id="main"></main>
+<footer><span class="pdlogo flogo" role="img" aria-label="Les Petits Débrouillards — Aux sciences citoyen·ne·s !"></span><div>POCL · un projet des Petits Débrouillards</div></footer>
+<div id="modal" class="modal hidden"><div class="box"><button class="x" onclick="closeModal()">×</button><div id="mBody"></div></div></div>
+<div id="toast"></div>
+<script>
+'use strict';
+// =====================================================================
+//  Outils
+// =====================================================================
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const g = (o, p) => p.split('.').reduce((a, k) => (a == null ? undefined : a[k]), o);
+const num = (v, d) => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? d : n; };
+const strip = h => String(h || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+const fmt = (v, d) => (typeof v === 'number' ? (d == null ? +v.toFixed(3) : v.toFixed(d)) : v == null ? '–' : String(v));
+const ago = s => s < 60 ? 'il y a ' + s + ' s' : s < 3600 ? 'il y a ' + Math.round(s / 60) + ' min' : 'il y a ' + Math.round(s / 3600) + ' h';
+
+let CFG = {sources: [], outputs: [], buttons: [], night: {on: false, from: 22, to: 7}};
+let ST = null, SYS = null, TAB = 'home', ED = null, W = null, NET = 'direct', stFails = 0, WS = {};
+
+function toast(m, bad) {
+  const t = $('#toast'); t.textContent = m; t.className = 'show' + (bad ? ' bad' : '');
+  clearTimeout(t._h); t._h = setTimeout(() => { t.className = ''; }, bad ? 6000 : 2500);
+}
+async function api(path, opt) {
+  const r = await fetch(path, opt);
+  let j = {}; try { j = await r.json(); } catch (e) { /* vide */ }
+  if (!r.ok || j.ok === false) throw new Error(j.err || ('erreur ' + r.status));
+  return j;
+}
+const postJ = (path, body) => api(path, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)});
+async function saveCfg(save, quiet) {
+  try {
+    CFG.board = B.id;
+    await postJ('/api/config' + (save === false ? '?save=0' : ''), CFG);
+    if (save !== false && !quiet) toast("Enregistré dans l'objet ✔");
+    return true;
+  } catch (e) { toast('Échec : ' + e.message, true); return false; }
+}
+function openModal(h) { $('#mBody').innerHTML = h; $('#modal').classList.remove('hidden'); }
+function closeModal() { $('#modal').classList.add('hidden'); $('#modal .box').classList.remove('wide'); $('#mBody').innerHTML = ''; W = null; }
+
+// Accès à Internet depuis le navigateur : direct si possible, sinon l'objet sert de relais
+async function fetchT(url, ms, opt) {
+  const c = new AbortController(); const h = setTimeout(() => c.abort(), ms);
+  try { return await fetch(url, Object.assign({signal: c.signal}, opt)); } finally { clearTimeout(h); }
+}
+async function readResp(r) {
+  const t = await r.text(); let j = null;
+  try { j = JSON.parse(t); } catch (e) { /* pas du JSON */ }
+  if (!r.ok) throw new Error((j && (j.message || j.err || j.error)) || t.slice(0, 200) || ('HTTP ' + r.status));
+  if (j === null) throw new Error("la réponse n'est pas du JSON");
+  return j;
+}
+async function hasInternet() {
+  try { return (await fetchT('https://api.open-meteo.com/v1/forecast?latitude=45&longitude=0&current=is_day', 6000)).ok; } catch (e) { return false; }
+}
+// Le navigateur va chercher lui-même les données ; l'objet ne sert de relais que si
+// le navigateur n'a pas Internet (ou si un site refuse les pages web : CORS).
+async function getJSON(url, auth) {
+  if (NET === 'direct') {
+    let r = null, e1 = null;
+    try { r = await fetchT(url, 25000, auth ? {headers: {Authorization: auth}} : undefined); } catch (e) { e1 = e; }
+    if (r) return readResp(r);
+    if (e1 && e1.name === 'AbortError') throw new Error('le serveur met trop de temps à répondre, réessaie un peu plus tard');
+    if (!(await hasInternet())) NET = 'proxy';  // sinon : relais pour cette adresse seulement
+  }
+  try { return readResp(await fetchT('/api/proxy?url=' + encodeURIComponent(url) + (auth ? '&auth=' + encodeURIComponent(auth) : ''), 30000)); }
+  catch (e) { throw new Error(e.name === 'AbortError' ? "l'objet ne répond pas" : e.message); }
+}
+
+// =====================================================================
+//  Matériel : broches de la Wemos D1 mini et types de sorties
+// =====================================================================
+const BOARDS = {
+  esp8266: {
+    id: 'esp8266', name: 'Wemos D1 mini (ESP8266)', l1: 'WEMOS', l2: 'D1 mini', base: 80,
+    L: ['RST', 'A0', 'D0', 'D5', 'D6', 'D7', 'D8', '3V3'], R: ['TX', 'RX', 'D1', 'D2', 'D3', 'D4', 'G', '5V'],
+    pins: ['D0', 'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'RX', 'TX'], inOnly: [], analog: 'A0', sda: 'D2', scl: 'D1',
+    disp: {G: 'GND'}, avoid: ['RX', 'TX', 'D3', 'D1', 'D2'],
+    info: {D0: 'GPIO16 · pas de résistance de tirage', D1: 'GPIO5 · SCL (écran I2C)', D2: 'GPIO4 · SDA (écran I2C)',
+      D3: 'GPIO0 · HAUT au démarrage, idéale pour un bouton', D4: 'GPIO2 · LED bleue de la carte, idéale pour un bouton',
+      D5: 'GPIO14 · libre', D6: 'GPIO12 · libre', D7: 'GPIO13 · libre', D8: 'GPIO15 · BAS au démarrage',
+      RX: 'GPIO3 · liaison USB (réception)', TX: 'GPIO1 · liaison USB (émission)', A0: 'entrée analogique 0–3,2 V', '3V3': '3,3 V', '5V': '5 V de l\'USB', G: 'masse (–)', RST: 'redémarrage'},
+    rec: {servo: ['D5', 'D6', 'D7', 'D8'], stepper: ['D5', 'D6', 'D7', 'D8'], stepdir: ['D5', 'D6', 'D7'], relay: ['D0', 'D5', 'D6', 'D7'],
+      neopixel: ['D5', 'D6', 'D7', 'D4', 'RX'], led: ['D5', 'D6', 'D7', 'D8'], buzzer: ['D5', 'D6', 'D7', 'D8'], oled: ['D2', 'D1'], nokia: ['D5', 'D7', 'D6', 'D8', 'D0'], button: ['D3', 'D4', 'D7', 'D6', 'D5', 'D0', 'D8']},
+    btnNote: 'entre une broche et GND (ou entre la broche et 3V3 pour D0 et D8)',
+    btnPins: b => [{l: 'patte 1', to: b.pin || '?', sig: true}, {l: 'patte 2', to: (b.pin === 'D0' || b.pin === 'D8') ? '3V3' : 'G'}],
+    warn(p, kind) {
+      const w = [];
+      if (p === 'D0' && kind === 'neopixel') w.push('D0 ne sait pas piloter des NeoPixel : choisis D5, D6 ou D7.');
+      if (p === 'D0' && ['servo', 'led', 'buzzer'].includes(kind)) w.push('D0 fonctionne, mais D5 à D8 sont plus précises.');
+      if (p === 'D3' && kind !== 'button') w.push('D3 doit rester HAUTE au démarrage : si la carte ne démarre plus, change de broche.');
+      if (p === 'D8' && kind === 'relay') w.push('Beaucoup de modules relais empêchent la carte de démarrer sur D8 : préfère D0, D5, D6 ou D7.');
+      if ((p === 'D8' || p === 'D0') && kind === 'button') w.push('Sur ' + p + ", l'autre patte du bouton va sur 3V3 (et pas sur GND).");
+      if (p === 'D4' && kind !== 'button') w.push("D4 est reliée à la LED bleue de la carte : le voyant d'état sera désactivé.");
+      return w;
+    }
+  },
+  esp32: {
+    id: 'esp32', name: 'ESP32 DevKit (WROOM-32)', l1: 'ESP32', l2: 'DevKit WROOM', base: 180,
+    L: ['EN', 'D36', 'D39', 'D34', 'D35', 'D32', 'D33', 'D25', 'D26', 'D27', 'D14', 'D12', 'D13', 'G', '5V'],
+    R: ['D23', 'D22', 'TX', 'RX', 'D21', 'D19', 'D18', 'D5', 'D17', 'D16', 'D4', 'D2', 'D15', 'G2', '3V3'],
+    pins: ['D4', 'D5', 'D13', 'D14', 'D15', 'D16', 'D17', 'D18', 'D19', 'D21', 'D22', 'D23', 'D25', 'D26', 'D27', 'D32', 'D33', 'D2', 'D12', 'D34', 'D35', 'D36', 'D39', 'RX', 'TX'],
+    inOnly: ['D34', 'D35', 'D36', 'D39'], analog: 'D34', sda: 'D21', scl: 'D22',
+    disp: {G: 'GND', G2: 'GND', D36: 'VP', D39: 'VN', '5V': 'VIN'}, avoid: ['RX', 'TX', 'D12', 'D2', 'D5', 'D14', 'D15', 'D21', 'D22', 'D34', 'D35', 'D36', 'D39'],
+    info: {D2: 'GPIO2 · LED bleue de la carte', D4: 'GPIO4 · libre', D5: 'GPIO5 · bascule au démarrage', D12: 'GPIO12 · doit rester BASSE au démarrage',
+      D13: 'GPIO13 · libre', D14: 'GPIO14 · bascule au démarrage', D15: 'GPIO15 · bascule au démarrage', D16: 'GPIO16 · libre', D17: 'GPIO17 · libre',
+      D18: 'GPIO18 · libre', D19: 'GPIO19 · libre', D21: 'GPIO21 · SDA (écran I2C)', D22: 'GPIO22 · SCL (écran I2C)', D23: 'GPIO23 · libre',
+      D25: 'GPIO25 · libre', D26: 'GPIO26 · libre', D27: 'GPIO27 · libre', D32: 'GPIO32 · libre', D33: 'GPIO33 · libre',
+      D34: 'GPIO34 · entrée seule (potentiomètre)', D35: 'GPIO35 · entrée seule', D36: 'GPIO36 (VP) · entrée seule', D39: 'GPIO39 (VN) · entrée seule',
+      TX: 'GPIO1 · liaison USB', RX: 'GPIO3 · liaison USB', EN: 'redémarrage', '3V3': '3,3 V', '5V': 'VIN : 5 V de l\'USB', G: 'masse (–)', G2: 'masse (–)'},
+    rec: {servo: ['D18', 'D19', 'D23', 'D25', 'D26', 'D27'], stepper: ['D32', 'D33', 'D25', 'D26'], stepdir: ['D25', 'D26', 'D27'], relay: ['D26', 'D27', 'D25', 'D13'],
+      neopixel: ['D16', 'D17', 'D18', 'D19'], led: ['D25', 'D26', 'D27', 'D18', 'D19'], buzzer: ['D25', 'D26', 'D27'], oled: ['D21', 'D22'], nokia: ['D18', 'D23', 'D19', 'D17', 'D16'], button: ['D4', 'D13', 'D27', 'D32', 'D33']},
+    btnNote: 'entre une broche et GND (pour D34 à D39, ajoute en plus une résistance de 10 kΩ entre la broche et 3V3)',
+    btnPins: b => {
+      const r = [{l: 'patte 1', to: b.pin || '?', sig: true}, {l: 'patte 2', to: 'G'}];
+      if (['D34', 'D35', 'D36', 'D39'].includes(b.pin)) r.push({l: 'résistance 10 kΩ', to: '3V3'});
+      return r;
+    },
+    warn(p, kind) {
+      const w = [];
+      if (this.inOnly.includes(p)) w.push(kind === 'button' ? p + " n'a pas de résistance interne : ajoute une résistance de 10 kΩ entre " + p + ' et 3V3.' : p + ' est une entrée seulement : elle ne peut pas piloter un composant.');
+      if (p === 'D12') w.push("D12 doit rester BASSE au démarrage, sinon la carte ne démarre pas : évite d'y brancher un relais ou un bouton.");
+      if (['D5', 'D14', 'D15'].includes(p) && ['relay', 'buzzer', 'stepper', 'stepdir'].includes(kind)) w.push(p + " bascule au démarrage : le composant peut s'activer un instant.");
+      if (p === 'D2' && kind !== 'button') w.push("D2 est reliée à la LED bleue de la carte : le voyant d'état sera désactivé.");
+      return w;
+    }
+  },
+  esp32c3: {
+    id: 'esp32c3', name: 'ESP32-C3 Super Mini', l1: 'ESP32-C3', l2: 'Super Mini', base: 100, usbTop: true,
+    // USB-C en haut : à gauche 5V, GND, 3.3, 4, 3, 2, 1, 0 ; à droite 5 à 10, 20, 21 (numéros imprimés = numéros GPIO)
+    L: ['5V', 'G', '3V3', '4', '3', '2', '1', '0'], R: ['5', '6', '7', '8', '9', '10', '20', '21'],
+    pins: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '20', '21'], inOnly: [], analog: '3', sda: '5', scl: '6',
+    disp: {G: 'GND', '3V3': '3.3'}, avoid: ['2', '8', '9', '5', '6', '3', '20', '21'],
+    info: {'0': 'GPIO0 · libre', '1': 'GPIO1 · libre', '2': 'GPIO2 · doit rester HAUTE au démarrage', '3': 'GPIO3 · entrée analogique (potentiomètre)',
+      '4': 'GPIO4 · libre', '5': 'GPIO5 · SDA (écran I2C)', '6': 'GPIO6 · SCL (écran I2C)', '7': 'GPIO7 · libre',
+      '8': 'GPIO8 · LED bleue de la carte · HAUTE au démarrage', '9': 'GPIO9 · bouton BOOT de la carte · HAUTE au démarrage',
+      '10': 'GPIO10 · libre', '20': 'GPIO20 · RX (libre : l\'USB est intégré)', '21': 'GPIO21 · TX : messages au démarrage',
+      '3V3': '3,3 V', '5V': '5 V de l\'USB', G: 'masse (–)'},
+    rec: {servo: ['4', '7', '10', '0', '1'], stepper: ['4', '0', '7', '1'], stepdir: ['4', '0', '7'], relay: ['10', '4', '0', '7'],
+      neopixel: ['4', '0', '7', '10'], led: ['4', '0', '7', '1'], buzzer: ['4', '0', '7', '1'], oled: ['5', '6'], nokia: ['4', '7', '0', '1', '10'], button: ['9', '10', '7', '0', '1', '4', '20']},
+    btnNote: 'entre une broche et GND. Le bouton BOOT de la carte est déjà relié à la broche 9 : rien à câbler !',
+    btnPins: b => (b.pin === '9' ? [{l: 'bouton BOOT de la carte (rien à câbler)', to: '9', sig: true}] : [{l: 'patte 1', to: b.pin || '?', sig: true}, {l: 'patte 2', to: 'G'}]),
+    warn(p, kind) {
+      const w = [];
+      if (p === '8' && kind !== 'button') w.push("8 est reliée à la LED bleue de la carte (le voyant d'état sera désactivé) et doit rester HAUTE au démarrage.");
+      if (p === '9' && kind !== 'button') w.push('9 est reliée au bouton BOOT et doit rester HAUTE au démarrage : garde-la pour un bouton.');
+      if (p === '2' && ['relay', 'stepper', 'stepdir', 'buzzer'].includes(kind)) w.push('2 doit rester HAUTE au démarrage : si la carte ne démarre plus, change de broche.');
+      if (p === '21' && ['relay', 'buzzer'].includes(kind)) w.push("21 envoie des messages au démarrage : le composant peut s'activer un instant.");
+      if (['servo', 'led', 'buzzer'].includes(kind) && CFG.outputs.filter(o => ['servo', 'led', 'buzzer'].includes(o.type)).length > 6)
+        w.push("L'ESP32-C3 n'a que 6 sorties PWM : 6 servos, LED ou buzzers au maximum.");
+      return w;
+    }
+  },
+  esp32s2: {
+    id: 'esp32s2', name: 'ESP32-S2 Mini (LOLIN / Wemos)', l1: 'ESP32-S2', l2: 'S2 Mini', base: 110,
+    // antenne en haut, USB-C en bas. Rangées extérieures = celles de la D1 mini (shields compatibles), rangées intérieures en plus
+    L: ['EN', '3', '5', '7', '9', '11', '12', '3V3'], Li: ['1', '2', '4', '6', '8', '10', '13', '14'],
+    Ri: ['40', '38', '36', '34', '21', '17', 'G2', '15'], R: ['39', '37', '35', '33', '18', '16', 'G', '5V'],
+    pins: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '21', '33', '34', '35', '36', '37', '38', '39', '40', '0'],
+    inOnly: [], analog: '3', sda: '33', scl: '35',
+    disp: {G: 'GND', G2: 'GND', '5V': 'VBUS', '3V3': '3.3V'}, avoid: ['0', '15', '33', '35', '3'],
+    info: Object.assign(Object.fromEntries(['1', '2', '4', '5', '6', '7', '8', '9', '10'].map(p => [p, 'GPIO' + p + ' · libre (analogique possible)'])),
+      Object.fromEntries(['11', '12', '13', '14', '16', '17', '18', '21', '34', '36', '37', '38', '39', '40'].map(p => [p, 'GPIO' + p + ' · libre'])), {
+      '0': 'GPIO0 · bouton « 0 » de la carte (pas sur les connecteurs)', '3': 'GPIO3 · entrée analogique (potentiomètre), place de A0',
+      '15': 'GPIO15 · LED bleue de la carte', '33': 'GPIO33 · SDA (écran I2C), place de D2', '35': 'GPIO35 · SCL (écran I2C), place de D1',
+      EN: 'redémarrage (bouton RST)', '3V3': '3,3 V', '5V': 'VBUS : 5 V de l\'USB', G: 'masse (–)', G2: 'masse (–)'}),
+    // mêmes places que sur la Wemos D1 mini (D5 = 7, D6 = 9, D7 = 11, D8 = 12, D0 = 5, D3 = 18, D4 = 16)
+    rec: {servo: ['7', '9', '11', '12', '1', '2'], stepper: ['7', '9', '11', '12'], stepdir: ['7', '9', '11'], relay: ['5', '7', '9', '11'],
+      neopixel: ['7', '9', '11', '16', '37'], led: ['7', '9', '11', '12'], buzzer: ['7', '9', '11', '12'], oled: ['33', '35'], nokia: ['7', '11', '9', '12', '5'], button: ['0', '18', '16', '11', '9', '7', '5', '12']},
+    btnNote: 'entre une broche et GND. Le bouton « 0 » de la carte peut servir de bouton, sans rien câbler.',
+    btnPins: b => (b.pin === '0' ? [{l: 'bouton « 0 » de la carte (rien à câbler)', to: '0', sig: true}] : [{l: 'patte 1', to: b.pin || '?', sig: true}, {l: 'patte 2', to: 'G'}]),
+    warn(p, kind) {
+      const w = [];
+      if (p === '0' && kind !== 'button') w.push("0 est le bouton de la carte : il n'est pas sur les connecteurs, garde-le pour un bouton.");
+      if (p === '15' && kind !== 'button') w.push("15 est reliée à la LED bleue de la carte : le voyant d'état sera désactivé.");
+      if (['servo', 'led', 'buzzer'].includes(kind) && CFG.outputs.filter(o => ['servo', 'led', 'buzzer'].includes(o.type)).length > 8)
+        w.push("L'ESP32-S2 n'a que 8 sorties PWM : 8 servos, LED ou buzzers au maximum.");
+      return w;
+    }
+  }
+};
+let B = BOARDS.esp8266;
+const MAP_32 = {D0: 'D26', D1: 'D22', D2: 'D21', D3: 'D4', D4: 'D13', D5: 'D18', D6: 'D19', D7: 'D23', D8: 'D25', RX: 'D16', TX: 'D17', A0: 'D34'};
+// Broche équivalente sur chaque carte, à partir des noms de la Wemos (même rôle : I2C, LED, bouton…)
+const MAP_C3 = {D0: '10', D1: '6', D2: '5', D3: '9', D4: '8', D5: '4', D6: '0', D7: '7', D8: '1', RX: '20', TX: '21', A0: '3'};
+const MAP_S2 = {D0: '5', D1: '35', D2: '33', D3: '18', D4: '16', D5: '7', D6: '9', D7: '11', D8: '12', RX: '37', TX: '39', A0: '3'};  // mêmes places physiques
+const PIN_MAPS = {esp32: MAP_32, esp32c3: MAP_C3, esp32s2: MAP_S2};
+function mapPins(c, from, to) {
+  if (!from || from === to) { c.board = to; return c; }
+  const toWemos = p => (from === 'esp8266' ? p : (Object.entries(PIN_MAPS[from] || {}).find(e => e[1] === p) || [])[0]);
+  const fromWemos = p => (to === 'esp8266' ? p : (PIN_MAPS[to] || {})[p]);
+  const f = p => (p ? (fromWemos(toWemos(p)) || '') : p);
+  (c.outputs || []).forEach(o => { o.pins = (o.pins || []).map(f); });
+  (c.buttons || []).forEach(b => { b.pin = f(b.pin); });
+  c.board = to;
+  return c;
+}
+const pinName = p => (p === '?' ? 'à choisir' : B.disp[p] || p);
+const TYPES = {
+  servo: {l: 'Servomoteur', ic: '🦾', d: 'Une aiguille ou un bras qui tourne de 0 à 180°.', u: '°', ylab: "l'angle (°)", y: [0, 180], ma: 250,
+    roles: [{n: 'Signal', w: '#f59e0b', h: 'fil orange ou jaune'}], pw: [{n: '+', to: '5V', h: 'fil rouge'}, {n: '–', to: 'G', h: 'fil marron ou noir'}],
+    def: () => ({opt: {pmin: 544, pmax: 2400, rel: true}, map: {pts: [[0, 0], [100, 180]], steps: false}, smooth: 1})},
+  stepper: {l: 'Moteur pas à pas 28BYJ-48 + carte ULN2003', ic: '⚙️', d: "Tourne d'un angle précis (cadran) ou en continu (hélice).", u: '°', ylab: "l'angle (°)", y: [0, 360], ma: 250,
+    roles: [{n: 'IN1'}, {n: 'IN2'}, {n: 'IN3'}, {n: 'IN4'}], pw: [{n: '+ 5V', to: '5V'}, {n: '– GND', to: 'G'}],
+    def: () => ({opt: {spr: 4096, speed: 800, mode: 'pos', rev: false}, map: {pts: [[0, 0], [100, 180]], steps: false}, smooth: 0})},
+  stepdir: {l: 'Moteur pas à pas + driver A4988 / DRV8825', ic: '🔩', d: 'Moteur NEMA 17 piloté par STEP/DIR (alimentation séparée).', u: '°', ylab: "l'angle (°)", y: [0, 360], ma: 10,
+    roles: [{n: 'STEP'}, {n: 'DIR'}, {n: 'EN', opt: true}], pw: [{n: 'VDD', to: '3V3'}, {n: 'GND', to: 'G'}],
+    note: "Le moteur s'alimente à part : VMOT/GND du driver sur une alimentation 8–35 V avec un condensateur de 100 µF. Règle le courant du driver avant de brancher le moteur. Relie RESET et SLEEP du driver.",
+    def: () => ({opt: {spr: 200, speed: 400, mode: 'pos', rev: false}, map: {pts: [[0, 0], [100, 180]], steps: false}, smooth: 0})},
+  relay: {l: 'Module relais', ic: '🔌', d: 'Allume ou éteint un appareil (lampe, ventilateur…) selon un seuil.', onoff: true, ma: 70,
+    roles: [{n: 'IN'}], pw: [{n: 'VCC', to: '5V'}, {n: 'GND', to: 'G'}],
+    note: 'Ne jamais câbler soi-même le côté 230 V : demande à un adulte habilité. Pour un élève, utiliser le relais avec de la basse tension (pile, USB).',
+    def: () => ({opt: {low: false}, cond: '>', thr: '10', hyst: 0, inv: false})},
+  neopixel: {l: 'Ruban / anneau NeoPixel (WS2812)', ic: '🌈', d: 'Jauge lumineuse ou couleur qui change selon la donnée.', u: '%', ylab: 'le pourcentage (%)', y: [0, 100],
+    roles: [{n: 'DIN', res: '330 Ω'}], pw: [{n: '+5V', to: '5V'}, {n: 'GND', to: 'G'}],
+    def: () => ({opt: {n: 8, bri: 40, mode: 'gauge', c1: '#00ff00', c2: '#ff0000', c3: ''}, map: {pts: [[0, 0], [100, 100]], steps: false}, smooth: 1})},
+  led: {l: 'LED', ic: '💡', d: 'Une LED dont la luminosité suit la donnée.', u: '%', ylab: 'la luminosité (%)', y: [0, 100], ma: 15,
+    roles: [{n: '+ (patte longue)', res: '220 Ω'}], pw: [{n: '– (patte courte)', to: 'G'}],
+    def: () => ({map: {pts: [[0, 0], [100, 100]], steps: false}, smooth: 0.5})},
+  buzzer: {l: 'Buzzer', ic: '🔔', d: 'Bipe quand la donnée franchit un seuil.', onoff: true, ma: 30,
+    roles: [{n: '+'}], pw: [{n: '–', to: 'G'}],
+    def: () => ({opt: {freq: 2000, mode: 'alert'}, cond: '>', thr: '10', hyst: 0, inv: false})},
+  oled: {l: 'Écran OLED I2C (0,96" ou 1,3")', ic: '🖥️', d: "Affiche les valeurs, l'heure, une barre de progression…", single: true, screen: true, ma: 25,
+    roles: [{n: 'SDA'}, {n: 'SCL'}], pw: [{n: 'VCC', to: '3V3'}, {n: 'GND', to: 'G'}],
+    def: () => ({pins: [B.sda, B.scl], opt: {chip: 'ssd1306', flip: false, every: 5, contrast: 200, pages: ['*{nom}\n#{heure}\n{date}']}})},
+  nokia: {l: 'Écran Nokia 5110 (84×48)', ic: '📟', d: 'Petit écran rétro de téléphone : valeurs, heure, barre de progression…', single: true, screen: true, ma: 20,
+    roles: [{n: 'CLK', h: 'parfois SCLK'}, {n: 'DIN', h: 'parfois MOSI'}, {n: 'DC', h: 'parfois D/C'}, {n: 'CE', h: 'parfois CS ou SCE'}, {n: 'RST'}, {n: 'BL', opt: true, h: 'rétroéclairage (LIGHT)'}],
+    pw: [{n: 'VCC', to: '3V3'}, {n: 'GND', to: 'G'}],
+    note: "Alimente l'écran en 3,3 V. Sans fil sur BL : relie BL (ou LIGHT) à GND sur les modules rouges, à 3V3 sur les modules bleus pour allumer le rétroéclairage. Avec un fil vers la carte, il s'éteint pendant la veille.",
+    def: () => ({opt: {flip: false, every: 5, contrast: 128, bllow: false, pages: ['*{nom}\n#{heure}\n{date}']}})},
+  mqtt: {l: 'Envoi MQTT', ic: '📡', d: 'Envoie les données à un serveur MQTT : domotique (Home Assistant…), tableau de bord, autre objet POCL…', wifi: true,
+    roles: [], pw: [],
+    def: () => ({src: '*', opt: {host: 'test.mosquitto.org', port: 1883, user: '', pass: '', topic: 'pocl/{nom}/{id}', every: 10, mode: 'change', retain: true, json: false}})}
+};
+const isScreen = t => t === 'oled' || t === 'nokia';
+const hostOf = n => (String(n || 'pocl').split('').map(c => (/[a-z0-9]/i.test(c) ? c.toLowerCase() : /[-_ ]/.test(c) ? '-' : '')).join('') || 'pocl');
+const MQS = {0: 'connecté', '-1': 'déconnecté', '-2': 'serveur injoignable (adresse ou port ?)', '-3': 'connexion perdue', '-4': 'le serveur ne répond pas',
+  1: 'protocole refusé', 2: 'identifiant refusé', 3: 'serveur indisponible', 4: 'utilisateur ou mot de passe incorrect', 5: 'accès refusé', '-10': 'pas configuré', '-11': "l'objet n'a pas le WiFi"};
+const PUBLIC_BROKERS = ['test.mosquitto.org', 'broker.hivemq.com', 'broker.emqx.io'];
+const ACTS = {
+  refresh: '🔄 Mettre à jour les données', page: "📄 Page suivante de l'écran", toggle: '⏯ Allumer / éteindre une sortie',
+  sleep: '🌙 Mettre en veille / réveiller', zero: '📍 Recaler un moteur pas à pas (zéro)', info: "ℹ️ Afficher les infos réseau sur l'écran"
+};
+
+function pinUsers(p, self) {
+  const u = [];
+  CFG.outputs.forEach((o, i) => {
+    if (self && self.out === i) return;
+    if ((o.pins || []).slice(0, TYPES[o.type].roles.length).includes(p)) u.push(o.name || TYPES[o.type].l);
+  });
+  CFG.buttons.forEach((b, i) => { if (!(self && self.btn === i) && b.pin === p) u.push('bouton ' + (b.name || (i + 1))); });
+  if (p === B.analog && CFG.sources.some(s => s.type === 'analog')) u.push('potentiomètre');
+  return u;
+}
+function pinWarn(p, kind) {
+  if (!p) return [];
+  const w = B.warn(p, kind);
+  if (p === 'RX' || p === 'TX') w.push(p + ' sert à la liaison USB : débranche ce fil pour téléverser un programme.');
+  if ((p === B.sda || p === B.scl) && kind !== 'oled' && CFG.outputs.some(o => o.type === 'oled')) w.push(B.sda + ' et ' + B.scl + " sont réservées à l'écran OLED.");
+  return w;
+}
+function pinSelect(id, cur, kind, optional, self) {
+  const rec = B.rec[kind] || [];
+  let h = `<select id="${id}" title="★ conseillée · ⚠ possible avec précautions · ✖ impossible">`;
+  h += `<option value="">${optional ? '— aucune —' : '— choisir —'}</option>`;
+  B.pins.forEach(p => {
+    const u = pinUsers(p, self), bad = kind !== 'button' && B.inOnly.includes(p);
+    const mk = bad ? ' ✖ entrée seule' : rec.includes(p) ? ' ★' : pinWarn(p, kind).length ? ' ⚠' : '';
+    h += `<option value="${p}"${p === cur ? ' selected' : ''}>${esc(pinName(p))}${p !== pinName(p) ? ' (' + p + ')' : ''}${mk}${u.length ? ' — prise : ' + esc(u.join(', ')) : ''}</option>`;
+  });
+  return h + '</select>';
+}
+function firstFree(list, taken) {
+  for (const p of list) if (!taken.includes(p) && !pinUsers(p).length) return p;
+  return '';
+}
+
+// =====================================================================
+//  Schéma de câblage (SVG) : la carte au centre, les composants autour
+// =====================================================================
+function devOfOutput(o) {
+  const T = TYPES[o.type], pins = [];
+  T.roles.forEach((r, k) => {
+    const p = (o.pins || [])[k];
+    if (!p && r.opt) return;
+    pins.push({l: r.n, to: p || '?', res: r.res, sig: true, h: r.h, w: r.w});
+  });
+  T.pw.forEach(r => pins.push({l: r.n, to: r.to, h: r.h}));
+  return {t: T.ic + ' ' + (o.name || T.l), s: o.name ? T.l : '', pins, note: T.note};
+}
+function devOfButton(b, i) {
+  return {t: '🔘 Bouton ' + (b.name || (i + 1)), s: 'bouton poussoir', pins: B.btnPins(b)};
+}
+function allDevices() {
+  const d = CFG.outputs.filter(o => TYPES[o.type].roles.length).map(devOfOutput).concat(CFG.buttons.map(devOfButton));
+  if (CFG.sources.some(s => s.type === 'analog'))
+    d.push({t: '🎛️ Potentiomètre', s: 'ou capteur analogique', pins: [{l: 'patte 1', to: '3V3'}, {l: 'curseur (milieu)', to: B.analog, sig: true}, {l: 'patte 3', to: 'G'}]});
+  return d;
+}
+function wiringSVG(devs) {
+  // rangées intérieures (S2 Mini) : décalées d'une demi-rangée pour que les fils passent entre les broches extérieures
+  const inner = !!(B.Li || B.Ri), half = inner ? 15 : 0;
+  const W0 = 960, row = 30, bw = inner ? 230 : 150, bx = (W0 - bw) / 2, by = 26, bh = Math.max(B.L.length, B.R.length) * row + 70 + half, boxW = 230;
+  const pos = {};
+  B.L.forEach((p, i) => { pos[p] = {x: bx, y: by + 50 + i * row, side: 'L'}; });
+  B.R.forEach((p, i) => { pos[p] = {x: bx + bw, y: by + 50 + i * row, side: 'R'}; });
+  (B.Li || []).forEach((p, i) => { pos[p] = {x: bx + 52, y: by + 50 + i * row + half, side: 'L', inner: true}; });
+  (B.Ri || []).forEach((p, i) => { pos[p] = {x: bx + bw - 52, y: by + 50 + i * row + half, side: 'R', inner: true}; });
+  const L = [], R = [];
+  devs.forEach(d => {
+    let s = 0;
+    d.pins.forEach(p => { if (p.sig && pos[p.to]) s += pos[p.to].side === 'L' ? 1 : -1; });
+    (s > 0 || (s === 0 && L.length < R.length) ? L : R).push(d);
+  });
+  const pal = ['#eab308', '#2563eb', '#16a34a', '#9333ea', '#0891b2', '#db2777', '#92400e', '#4f46e5', '#ea580c', '#0d9488'];
+  let ci = 0;
+  const RAIL = {G: '#111827', '5V': '#dc2626', '3V3': '#f97316'};
+  const boxes = [], wires = [], used = {};
+  let bottom = by + bh;
+  const chan = {L: 0, R: 0};
+  [['L', L], ['R', R]].forEach(([side, list]) => {
+    let y = 14;
+    list.forEach(d => {
+      const h = 40 + d.pins.length * 20;
+      const x = side === 'L' ? 8 : W0 - 8 - boxW;
+      boxes.push({d, x, y, h, side});
+      d.pins.forEach((p, k) => {
+        const py = y + 44 + k * 20;
+        const ax = side === 'L' ? x + boxW : x;
+        p._c = RAIL[p.to] || p.w || pal[ci++ % pal.length];
+        const b = pos[p.to];
+        if (!b) return;
+        used[p.to] = true;
+        const n = chan[side]++;
+        const cx = side === 'L' ? bx - 34 - (n % 14) * 9 : bx + bw + 34 + (n % 14) * 9;
+        wires.push({ax, ay: py, cx, p, b, side, rail: !!RAIL[p.to]});
+      });
+      y += h + 14;
+    });
+    bottom = Math.max(bottom, y);
+  });
+  // allées pour les fils qui passent de l'autre côté de la carte, puis les rails d'alimentation
+  const cross = wires.filter(w => !w.rail && w.b.side !== w.side);
+  const laneY0 = bottom + 10;
+  const railY = {}; let ry = laneY0 + cross.length * 8 + 16;
+  ['G', '5V', '3V3'].forEach(r => { if (used[r]) { railY[r] = ry; ry += 18; } });
+  const H = ry + 10;
+  let s = `<svg viewBox="0 0 ${W0} ${H}" xmlns="http://www.w3.org/2000/svg" font-size="12">`;
+  // rails
+  Object.keys(railY).forEach(r => {
+    s += `<line x1="8" x2="${W0 - 8}" y1="${railY[r]}" y2="${railY[r]}" stroke="${RAIL[r]}" stroke-width="3" opacity=".85"/>`;
+    s += `<text x="10" y="${railY[r] - 4}" fill="${RAIL[r]}" font-weight="700">${r === 'G' ? 'GND (–)' : r}</text>`;
+    const k = {G: 8, '5V': 15, '3V3': 22}[r], b = pos[r], dx = b.side === 'L' ? -k : k;
+    s += `<path d="M${b.x},${b.y} H${b.x + dx} V${railY[r]}" fill="none" stroke="${RAIL[r]}" stroke-width="2.5"/><circle cx="${b.x + dx}" cy="${railY[r]}" r="3.5" fill="${RAIL[r]}"/>`;
+  });
+  // fils
+  let lane = 0;
+  wires.forEach(w => {
+    let d;
+    const c = w.p._c;
+    if (w.rail) {
+      d = `M${w.ax},${w.ay} H${w.cx} V${railY[w.p.to]}`;
+      s += `<circle cx="${w.cx}" cy="${railY[w.p.to]}" r="3.5" fill="${c}"/>`;
+    } else if (w.b.side === w.side) {
+      d = `M${w.ax},${w.ay} H${w.cx} V${w.b.y} H${w.b.x}`;
+    } else {
+      const ly = laneY0 + (lane++) * 8;
+      const cx2 = w.b.side === 'L' ? bx - 28 : bx + bw + 28;
+      d = `M${w.ax},${w.ay} H${w.cx} V${ly} H${cx2} V${w.b.y} H${w.b.x}`;
+    }
+    s += `<path d="${d}" fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    if (w.p.res && !w.rail) {
+      const mx = (w.cx + (w.b.side === w.side ? w.b.x : w.cx)) / 2;
+      const rx = w.b.side === w.side ? mx : w.cx, ryy = w.b.side === w.side ? w.b.y : w.ay;
+      s += `<rect x="${rx - 11}" y="${ryy - 5}" width="22" height="10" rx="2" fill="#fde68a" stroke="#92400e"/><text x="${rx}" y="${ryy - 8}" text-anchor="middle" font-size="10" fill="#92400e">${esc(w.p.res)}</text>`;
+    }
+  });
+  // carte
+  s += `<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10" fill="#1e3a5f" stroke="#0f172a" stroke-width="2"/>`;
+  if (B.usbTop) {  // ESP32-C3 Super Mini : USB-C en haut, antenne en bas
+    s += `<rect x="${bx + bw / 2 - 22}" y="${by - 8}" width="44" height="18" rx="4" fill="#94a3b8"/><text x="${bx + bw / 2}" y="${by + 26}" text-anchor="middle" font-size="10" fill="#cbd5e1">USB-C</text>`;
+    s += `<rect x="${bx + 30}" y="${by + bh - 28}" width="${bw - 60}" height="22" rx="3" fill="#cbd5e1"/><text x="${bx + bw / 2}" y="${by + bh - 13}" text-anchor="middle" font-size="10" fill="#334155">antenne WiFi</text>`;
+  } else {
+    s += `<rect x="${bx + 30}" y="${by + 6}" width="${bw - 60}" height="22" rx="3" fill="#cbd5e1"/><text x="${bx + bw / 2}" y="${by + 21}" text-anchor="middle" font-size="10" fill="#334155">antenne WiFi</text>`;
+    s += `<rect x="${bx + bw / 2 - 20}" y="${by + bh - 12}" width="40" height="16" rx="3" fill="#94a3b8"/><text x="${bx + bw / 2}" y="${by + bh + 18}" text-anchor="middle" font-size="10" fill="#64748b">USB</text>`;
+  }
+  s += `<text x="${bx + bw / 2}" y="${by + bh / 2}" text-anchor="middle" fill="#fff" font-weight="700" font-size="13">${B.l1}</text><text x="${bx + bw / 2}" y="${by + bh / 2 + 16}" text-anchor="middle" fill="#93c5fd" font-size="12">${B.l2}</text>`;
+  Object.keys(pos).forEach(p => {
+    const b = pos[p], on = used[p];
+    s += `<g><title>${esc(pinName(p) + (B.info[p] ? ' — ' + B.info[p] : ''))}</title><circle cx="${b.x}" cy="${b.y}" r="${on ? 6 : 5}" fill="${on ? '#facc15' : '#d4a017'}" stroke="${on ? '#111' : '#7c5e10'}"/>`;
+    s += `<text x="${b.side === 'L' ? b.x + 11 : b.x - 11}" y="${b.y + 4}" text-anchor="${b.side === 'L' ? 'start' : 'end'}" fill="#fff" font-weight="${on ? 700 : 400}">${esc(pinName(p))}</text></g>`;
+  });
+  // composants
+  boxes.forEach(({d, x, y, h, side}) => {
+    s += `<rect x="${x}" y="${y}" width="${boxW}" height="${h}" rx="8" fill="#fff" stroke="#94a3b8"/>`;
+    s += `<text x="${x + 10}" y="${y + 18}" font-weight="700">${esc(cut(d.t, 30))}</text><text x="${x + 10}" y="${y + 32}" fill="#6b7280" font-size="11">${esc(cut(d.s, 36))}</text>`;
+    d.pins.forEach((p, k) => {
+      const py = y + 44 + k * 20, ax = side === 'L' ? x + boxW : x;
+      const tx = side === 'L' ? x + 10 : x + 14;
+      s += `<circle cx="${ax}" cy="${py}" r="4" fill="${p._c}"/>`;
+      s += `<text x="${tx}" y="${py + 4}"><tspan font-weight="600">${esc(cut(p.l, 18))}</tspan><tspan fill="${p.to === '?' ? '#dc2626' : '#6b7280'}"> → ${esc(pinName(p.to))}</tspan></text>`;
+    });
+  });
+  return s + '</svg>';
+}
+const cut = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+
+// =====================================================================
+//  État en direct
+// =====================================================================
+function srcIdx(id) { return CFG.sources.findIndex(s => s.id === id); }
+function srcLive(id) { const i = srcIdx(id); return ST && i >= 0 ? ST.src[i] : null; }
+function srcRange(id) {
+  let lo = Infinity, hi = -Infinity;
+  CFG.outputs.forEach(o => {
+    if (o.src !== id) return;
+    if (o.map) o.map.pts.forEach(p => { lo = Math.min(lo, p[0]); hi = Math.max(hi, p[0]); });
+    if (TYPES[o.type].onoff) { const t = num(o.thr, 0); lo = Math.min(lo, t - Math.abs(t) - 1); hi = Math.max(hi, t + Math.abs(t) + 1); }
+  });
+  const s = CFG.sources.find(x => x.id === id);
+  if (s && s.type === 'analog') { lo = 0; hi = 1023; }
+  if (s && s.type === 'clock') { const c = CLOCK.find(x => x[0] === s.what); if (c) { lo = c[2]; hi = c[3]; } }
+  if (lo === Infinity) { lo = 0; hi = 100; }
+  return [lo, hi];
+}
+const LIVE = {
+  sv: i => { const s = ST.src[i]; return s ? esc(s.txt) : '–'; },
+  sa: i => { const s = ST.src[i]; if (!s) return ''; if (s.sim) return '🧪 valeur simulée'; return s.age >= 0 ? 'mise à jour ' + ago(s.age) : (s.next != null ? 'en attente…' : ''); },
+  se: i => { const s = ST.src[i]; return s && s.err ? '⚠ ' + esc(s.err) : ''; },
+  ov: i => {
+    const s = ST.out[i], o = CFG.outputs[i]; if (!s || !o) return '';
+    if (!s.en) return '<span class="mute">⏸ éteinte</span>';
+    if (s.test) return '🧪 essai';
+    if (TYPES[o.type].onoff) return s.on ? '<b class="okc">● ACTIVÉ</b>' : '○ repos';
+    if (isScreen(o.type)) return ST.asleep ? 'veille' : 'affiche';
+    if (o.type === 'mqtt') return s.mq === 0 ? `<b class="okc">● connecté</b> <span class="mute">· ${s.cur || 0} message${(s.cur || 0) > 1 ? 's' : ''} envoyé${(s.cur || 0) > 1 ? 's' : ''}</span>` : `<span class="err">○ ${esc(MQS[s.mq] || 'erreur ' + s.mq)}</span>`;
+    const T = TYPES[o.type], u = o.type.startsWith('step') && o.opt && o.opt.mode === 'speed' ? ' tr/min' : ' ' + T.u;
+    return s.cur == null ? '<span class="mute">attend une donnée</span>' : '<b>' + fmt(s.cur, 1) + u + '</b>';
+  },
+  bp: i => { const b = ST.btn[i]; return b ? (b.p ? '<b class="okc">● appuyé</b>' : '○ relâché') + ` <span class="mute">(${b.n} appui${b.n > 1 ? 's' : ''})</span>` : ''; },
+  wifi: () => ST.wifi.ok ? `<span class="okc">● connecté</span> à <b>${esc(ST.wifi.ssid)}</b> (${ST.wifi.rssi} dBm)` : '<span class="err">● pas connecté</span>',
+  addr: () => ST.wifi.ok ? `<a href="http://${ST.wifi.ip}">http://${ST.wifi.ip}</a> · <a href="http://${esc(ST.wifi.host)}">http://${esc(ST.wifi.host)}</a>` : '–',
+  ap: () => ST.wifi.ap ? `ouvert : <b>${esc(ST.wifi.apSsid)}</b> → http://192.168.4.1 (${ST.wifi.clients} appareil${ST.wifi.clients > 1 ? 's' : ''})` : 'fermé',
+  mem: () => `${Math.round(ST.heap / 1024)} Ko libres${ST.blk ? ' (bloc max ' + Math.round(ST.blk / 1024) + ' Ko)' : ''} · ${ST.time || 'heure non synchronisée'} · allumé depuis ${Math.round(ST.up / 60)} min`,
+  sleep: () => ST.asleep ? '🌙 en veille' : '☀️ actif',
+  srcval: (i, k) => { const s = srcLive(k); return s ? 'valeur actuelle : <b>' + esc(s.txt) + '</b>' : ''; },
+  econd: () => condNow(),
+  emq: () => {
+    if (!ED || ED.o.type !== 'mqtt') return '';
+    const s = ED.tried >= 0 && ST.out[ED.tried];
+    if (!s) return "Clique « ▶ Essayer sur l'objet » pour tester la connexion au serveur.";
+    return s.mq === 0 ? `<b class="okc">● Connecté</b> au serveur · ${s.cur || 0} message(s) envoyé(s)` : `<span class="err">○ ${esc(MQS[s.mq] || 'erreur ' + s.mq)}</span> <span class="mute">(nouvel essai automatique dans quelques secondes)</span>`;
+  },
+  emap: () => { drawChart(); return null; }
+};
+function updateLive() {
+  if (!ST) return;
+  const w = ST.wifi;
+  $('#hStatus').innerHTML = w.ok ? `<span class="dot" style="background:#22c55e"></span>${esc(w.ssid)} · ${esc(w.ip)}`
+    : w.ap ? `<span class="dot" style="background:#f59e0b"></span>point d'accès ${esc(w.apSsid)}` : '<span class="dot" style="background:#ef4444"></span>pas de WiFi';
+  $$('[data-live]').forEach(el => {
+    const a = el.dataset.live, c = a.indexOf(':'), k = c < 0 ? a : a.slice(0, c), arg = c < 0 ? '' : a.slice(c + 1);
+    try { const v = LIVE[k](+arg, arg); if (v != null && el.innerHTML !== v) el.innerHTML = v; } catch (e) { /* ignorer */ }
+  });
+}
+async function poll() {
+  try { ST = await api('/api/state'); stFails = 0; updateLive(); } catch (e) {
+    if (++stFails >= 3) $('#hStatus').innerHTML = '<span class="dot" style="background:#ef4444"></span>objet injoignable';
+  }
+  setTimeout(poll, document.hidden ? 6000 : 2000);
+}
+
+// =====================================================================
+//  Navigation
+// =====================================================================
+const VIEWS = {};
+function render() {
+  $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === TAB));
+  $('#main').innerHTML = VIEWS[TAB]();
+  $('#main').oninput = $('#main').onchange = null;
+  if (VIEWS[TAB].after) VIEWS[TAB].after();
+  updateLive();
+}
+$$('#tabs button').forEach(b => { b.onclick = () => { TAB = b.dataset.tab; render(); window.scrollTo(0, 0); }; });
+
+// =====================================================================
+//  Tableau de bord
+// =====================================================================
+VIEWS.home = () => {
+  let h = '';
+  if (!CFG.sources.length && !CFG.outputs.length) {
+    h += `<div class="card"><h2>👋 Bienvenue !</h2><ol class="steplist">
+      <li><b>Connecte l'objet au WiFi</b> : onglet <a href="#" onclick="TAB='sys';render();return false">📶 Réglages</a>.</li>
+      <li><b>Choisis une donnée</b> (vélos disponibles, météo, qualité de l'air…) : onglet <a href="#" onclick="TAB='data';render();return false">📊 Données</a>.</li>
+      <li><b>Ajoute une sortie</b> (servo, LED, écran…) et règle comment elle réagit : onglet <a href="#" onclick="TAB='outs';render();return false">⚙️ Sorties</a>.</li>
+      <li><b>Câble</b> en suivant le schéma : onglet <a href="#" onclick="TAB='wire';render();return false">🔌 Câblage</a>.</li></ol>
+      <p class="mute">Pressé ? Charge un exemple tout prêt dans <a href="#" onclick="TAB='sys';render();return false">📶 Réglages › Recette</a>.</p></div>`;
+  }
+  h += `<div class="card"><div class="row between"><h2>📟 ${esc(SYS ? SYS.name : 'POCL')}</h2><span data-live="sleep"></span></div>
+    <div class="mute">WiFi : <span data-live="wifi"></span><br>Adresse : <span data-live="addr"></span><br>Point d'accès : <span data-live="ap"></span><br><span data-live="mem"></span></div>
+    <div class="row" style="margin-top:10px"><button class="btn" onclick="act('refresh','Mise à jour demandée')">🔄 Tout mettre à jour</button>
+    <button class="btn" onclick="sleepToggle()">🌙 Veille / réveil</button>
+    <button class="btn" onclick="act('info',&quot;Infos affichées sur l'écran&quot;)">ℹ️ Infos sur l'écran</button></div></div>`;
+  if (CFG.sources.length) {
+    h += '<h3>📊 Données</h3><div class="grid">';
+    CFG.sources.forEach((s, i) => {
+      const [lo, hi] = srcRange(s.id);
+      h += `<div class="card src"><div class="row between"><span class="tag">${esc(s.id)}</span><button class="btn sm" title="Simuler une valeur pour tester" onclick="simToggle(${i})">🧪</button></div>
+        <div class="mute" style="margin:4px 0">${esc(s.label || '')}</div><div class="val" data-live="sv:${i}">–</div>
+        <div class="mute" data-live="sa:${i}"></div><div class="err" data-live="se:${i}"></div>
+        <div id="sim${i}" class="hidden"><input type="range" min="${lo}" max="${hi}" step="${(hi - lo) / 200}" oninput="simSet(${i},this.value)" style="width:100%">
+        <button class="btn sm" onclick="simSet(${i},'');simToggle(${i})">Arrêter la simulation</button></div></div>`;
+    });
+    h += '</div>';
+  }
+  if (CFG.outputs.length) {
+    h += '<div class="card"><h2>⚙️ Sorties</h2>';
+    CFG.outputs.forEach((o, i) => {
+      const T = TYPES[o.type];
+      h += `<div class="item"><div>${T.ic} <b>${esc(o.name || T.l)}</b> <span class="mute">${o.src === '*' ? '← toutes les données' : o.src ? '← ' + esc(o.src) : ''}</span></div>
+        <div class="row"><span data-live="ov:${i}"></span><button class="btn sm" onclick="act('toggle',null,${i})" title="Allumer / éteindre">⏯</button></div></div>`;
+    });
+    h += '</div>';
+  }
+  if (CFG.buttons.length) {
+    h += '<div class="card"><h2>🔘 Boutons</h2>';
+    CFG.buttons.forEach((b, i) => { h += `<div class="item"><div><b>${esc(b.name || 'Bouton ' + (i + 1))}</b> <span class="mute">${esc(b.pin)} · ${esc(ACTS[b.action])}</span></div><span data-live="bp:${i}"></span></div>`; });
+    h += '</div>';
+  }
+  return h;
+};
+async function act(what, msg, out) {
+  try { await api('/api/action?do=' + what + (out != null ? '&out=' + out : '')); if (msg) toast(msg); } catch (e) { toast(e.message, true); }
+}
+function sleepToggle() { act(ST && ST.sleep ? 'wake' : 'sleep', ST && ST.sleep ? 'Réveil' : 'Mise en veille'); }
+function simToggle(i) { $('#sim' + i).classList.toggle('hidden'); }
+let simTimer = null;
+function simSet(i, v) { clearTimeout(simTimer); simTimer = setTimeout(() => api('/api/sim?src=' + i + '&v=' + encodeURIComponent(v)).catch(e => toast(e.message, true)), 120); }
+
+// =====================================================================
+//  Données (sources)
+// =====================================================================
+VIEWS.data = () => {
+  let h = `<div class="card"><div class="row between"><h2>📊 Données</h2><button class="btn pri" onclick="addSource()">➕ Ajouter une donnée</button></div>
+    <p class="mute">Une donnée = une valeur récupérée régulièrement (sur Internet ou sur la broche A0). Les sorties et l'écran l'utilisent grâce à son nom court.</p>`;
+  if (!CFG.sources.length) h += '<p>Aucune donnée pour l\'instant.</p>';
+  CFG.sources.forEach((s, i) => {
+    const users = CFG.outputs.filter(o => o.src === s.id || o.src === '*' || (isScreen(o.type) && JSON.stringify(o.opt.pages || []).includes('{' + s.id))).map(o => o.name || TYPES[o.type].l);
+    const kind = s.type === 'analog' ? 'broche ' + B.analog : s.type === 'manual' ? 'réglée à la main' : s.type === 'clock' ? "🕒 calculée par l'objet" : (s.ods ? 'Open Data · ' : 'web · ') + 'toutes les ' + dur(s.every) + (s.auth ? ' · 🔑' : '');
+    h += `<div class="item"><div><span class="tag">${esc(s.id)}</span> <b>${esc(s.label || '')}</b><div class="mute">${kind}${users.length ? ' · utilisée par ' + esc(users.join(', ')) : ''}</div>
+      <div><span data-live="sv:${i}" style="font-weight:700"></span> <span class="mute" data-live="sa:${i}"></span> <span class="err" data-live="se:${i}"></span></div></div>
+      <div class="row"><button class="btn sm" onclick="editSource(${i})">✏️</button><button class="btn sm bad" onclick="delSource(${i})">🗑️</button></div></div>`;
+  });
+  return h + '</div>';
+};
+const maxSrc = () => (SYS && SYS.maxSrc) || 8;  // 8 sur ESP8266, 16 sur ESP32
+const dur = s => s < 60 ? s + ' s' : s < 3600 ? Math.round(s / 60) + ' min' : Math.round(s / 3600) + ' h';
+function addSource() {
+  if (CFG.sources.length >= maxSrc()) return toast(maxSrc() + ' données au maximum sur cette carte', true);
+  openModal(`<h2>Ajouter une donnée</h2><div class="types">
+    <div class="type" onclick="wizCat()"><div class="ic">📚</div><b>Catalogue de données prêtes</b><div class="mute">Plus de 100 données rangées par familles : météo, air, rivières, marées, énergie, trains, vélos, parkings, vacances, économie, espace… Un clic suffit.</div><span class="tag">le plus simple</span></div>
+    <div class="type" onclick="wizODS()"><div class="ic">🔎</div><b>Portail Open Data</b><div class="mute">Bordeaux, Paris, Rennes, Toulouse, Nantes, RTE, data.economie… : recherche guidée dans tous les jeux de données.</div></div>
+    <div class="type" onclick="wizJSON()"><div class="ic">🌐</div><b>Adresse web (JSON)</b><div class="mute">N'importe quel service qui répond en JSON (météo…) : clique sur la valeur voulue.</div></div>
+    <div class="type" onclick="wizLocal('analog')"><div class="ic">🎛️</div><b>Potentiomètre / capteur</b><div class="mute">Une valeur lue sur la broche ${B.analog} (de 0 à 1023).</div></div>
+    <div class="type" onclick="wizLocal('clock')"><div class="ic">🕒</div><b>Horloge, calendrier et lune</b><div class="mute">Heure, jour de la semaine, phase de la lune… calculés par l'objet, sans Internet.</div></div>
+    <div class="type" onclick="wizLocal('manual')"><div class="ic">✋</div><b>Valeur réglée à la main</b><div class="mute">Pour tester, ou régler une consigne depuis le tableau de bord.</div></div></div>`);
+}
+function editSource(i) {
+  const s = CFG.sources[i];
+  if (s.type !== 'url') return wizLocal(s.type, i);
+  if (s.ods) {
+    W = Object.assign({kind: 'ods', step: 3, editIdx: i, q: '', list: null, fields: [], rows: [], vals: []}, clone(s.ods), {url: s.url, path: s.path, res: null, id: s.id, label: s.label, k: s.kind, every: s.every, dec: s.dec, tmap: s.tmap || '', mul: s.mul || 1, auth: s.auth});
+  } else {
+    W = {kind: 'json', step: 3, editIdx: i, url: s.url, path: s.path, data: null, res: null, id: s.id, label: s.label, k: s.kind, every: s.every, dec: s.dec, tmap: s.tmap || '', mul: s.mul || 1, auth: s.auth};
+  }
+  openModal(''); renderWiz();
+}
+async function delSource(i) {
+  const id = CFG.sources[i].id;
+  const users = CFG.outputs.filter(o => o.src === id);
+  if (!confirm('Supprimer la donnée « ' + id + ' » ?' + (users.length ? '\n' + users.length + ' sortie(s) ne seront plus pilotées.' : ''))) return;
+  CFG.sources.splice(i, 1);
+  users.forEach(o => { o.src = ''; });
+  await saveCfg(); render();
+}
+function slug(s) {
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9_]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 14);
+}
+function uniqueId(base, skip) {
+  let id = slug(base) || 'donnee', n = 2; const b = id;
+  while (CFG.sources.some((s, i) => s.id === id && i !== skip)) id = b + n++;
+  return id;
+}
+
+// --- Assistant commun : rendu ---
+function renderWiz() {
+  if (!W) return;
+  const h = W.kind === 'ods' ? wizOdsHTML() : W.kind === 'json' ? wizJsonHTML() : W.kind === 'cat' ? wizCatHTML() : wizLocalHTML();
+  $('#modal .box').classList.toggle('wide', W.kind === 'ods' && W.step === 2);
+  $('#mBody').innerHTML = h + (W.busy ? '<p class="mute">⏳ Chargement…</p>' : '') + (W.err ? `<div class="errbox">⚠ ${esc(W.err)}</div>` : '') + (NET === 'proxy' && W.kind !== 'local' ? '<p class="mute">📡 Ton appareil n\'a pas Internet : l\'objet va chercher les données pour lui.</p>' : '');
+  if (W.after) { const f = W.after; W.after = null; f(); }
+}
+function readWiz() {
+  $$('#mBody [data-w]').forEach(el => { W[el.dataset.w] = el.type === 'checkbox' ? el.checked : el.value; });
+}
+
+// --- Portail Opendatasoft ---
+const PORTALS = [
+  ['Bordeaux Métropole (datahub)', 'https://datahub.bordeaux-metropole.fr'],
+  ['Ville de Paris', 'https://opendata.paris.fr'],
+  ['Île-de-France', 'https://data.iledefrance.fr'],
+  ['Rennes Métropole', 'https://data.rennesmetropole.fr'],
+  ['Toulouse Métropole', 'https://data.toulouse-metropole.fr'],
+  ['Nantes Métropole, Loire-Atlantique, Pays de la Loire', 'https://data.nantesmetropole.fr'],
+  ['Énergie : ODRÉ (RTE éCO2mix, gaz, électricité…)', 'https://odre.opendatasoft.com'],
+  ['Économie (prix des carburants…)', 'https://data.economie.gouv.fr'],
+  ['Éducation nationale', 'https://data.education.gouv.fr'],
+  ['Enseignement supérieur et recherche', 'https://data.enseignementsup-recherche.gouv.fr'],
+  ['Culture', 'https://data.culture.gouv.fr'],
+  ['SNCF', 'https://ressources.data.sncf.com'],
+  ['Opendatasoft — catalogue mondial', 'https://public.opendatasoft.com']
+];
+const SUGG = {
+  'https://datahub.bordeaux-metropole.fr': [['ci_vcub_p', '🚲 Stations Le Vélo (temps réel)'], ['st_park_p', '🅿️ Parkings (temps réel)']],
+  'https://opendata.paris.fr': [['velib-disponibilite-en-temps-reel', "🚲 Vélib' (temps réel)"]],
+  'https://odre.opendatasoft.com': [['eco2mix-national-tr', '⚡ Électricité en France (temps réel)'], ['eco2mix-regional-tr', '⚡ Électricité par région (temps réel)']],
+  'https://data.economie.gouv.fr': [['prix-des-carburants-en-france-flux-instantane-v2', '⛽ Prix des carburants (temps réel)']]
+};
+const odsBase = p => String(p).replace(/\/+$/, '') + '/api/explore/v2.1/catalog/datasets';
+const odsId = f => (/^[A-Za-z_][A-Za-z0-9_]*$/.test(f) ? f : '`' + f + '`');
+const isNumT = t => ['int', 'double', 'integer', 'float', 'decimal'].includes(t);
+const isDateT = t => ['date', 'datetime'].includes(t);
+const fType = n => (W.fields.find(f => f.name === n) || {}).type;
+function odsLit(v, t) { return isNumT(t) && v !== '' && !isNaN(+v) ? String(+v) : '"' + String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'; }
+function wizODS() {
+  W = {kind: 'ods', step: 1, portal: PORTALS[0][1], q: '', list: null, ds: '', fields: [], rows: [], vals: [], mode: 'value', field: '', ff: '', fv: '', order: '', where: '', editIdx: -1, page: 0, ps: 20, tq: '', tsort: ''};
+  renderWiz();
+}
+function stepsBar(n, labels) { return '<div class="steps">' + labels.map((l, i) => `<span class="${i + 1 === n ? 'on' : ''}">${i + 1}. ${l}</span>`).join('') + '</div>'; }
+function wizOdsHTML() {
+  const bar = stepsBar(W.step, ['Chercher', 'Choisir', 'Valider']);
+  if (W.step === 1) {
+    const known = PORTALS.some(p => p[1] === W.portal);
+    let h = `<h2>🔎 Portail Open Data</h2>${bar}<label class="f">Portail</label>
+      <select onchange="readWiz();W.portal=this.value||'https://';W.list=null;renderWiz()">${PORTALS.map(p => `<option value="${p[1]}"${p[1] === W.portal ? ' selected' : ''}>${esc(p[0])}</option>`).join('')}<option value=""${known ? '' : ' selected'}>Autre portail Opendatasoft…</option></select>
+      ${known ? '' : `<input class="w" data-w="portal" value="${esc(W.portal)}" placeholder="https://data.exemple.fr" style="margin-top:6px">`}
+      <label class="f">Que cherches-tu ?</label><div class="row"><input data-w="q" value="${esc(W.q)}" placeholder="vélo, parking, air, arbre, eau…" onkeydown="if(event.key==='Enter')odsSearch()" style="flex:1">
+      <button class="btn pri" onclick="odsSearch()">Chercher</button></div>`;
+    const sg = SUGG[W.portal];
+    if (sg) h += '<div style="margin-top:8px"><span class="mute">Données en temps réel : </span>' + sg.map(x => `<span class="chip" onclick="odsOpen('${x[0]}')">${esc(x[1])}</span>`).join('') + '</div>';
+    if (W.list) {
+      h += `<h3>${W.list.length} jeu${W.list.length > 1 ? 'x' : ''} de données</h3>`;
+      if (!W.list.length) h += '<p class="mute">Rien trouvé : essaie un autre mot (sans accent, au singulier…).</p>';
+      W.list.forEach((d, i) => {
+        h += `<div class="item"><div><b>${esc(d.t)}</b><div class="mute">${esc(d.id)}${d.n != null ? ' · ' + d.n + ' lignes' : ''}${d.has ? '' : ' · fichiers seulement'}</div></div>
+          <button class="btn sm"${d.has ? '' : ' disabled'} onclick="odsOpen(W.list[${i}].id)">Choisir ›</button></div>`;
+      });
+    }
+    return h;
+  }
+  if (W.step === 2) {
+    let h = `<h2>🔎 ${esc(W.title || W.ds)}</h2>${bar}<button class="btn sm" onclick="readWiz();W.step=1;renderWiz()">‹ Autre jeu de données</button>`;
+    if (!W.fields.length) return h;
+    h += `<p class="mute">${esc(W.desc || '')}</p><p class="mute">${W.total != null ? W.total + ' lignes · ' : ''}${W.fields.length} champs.
+      <b>Clique sur une case</b> : sa colonne devient le champ lu, et sa ligne est retenue (filtre ci-dessous). Clique sur un titre pour choisir seulement la colonne, sur ↕ pour trier.</p>`;
+    h += odsTableHTML();
+    const numF = W.fields.filter(f => isNumT(f.type));
+    const fieldsFor = W.mode === 'value' ? W.fields : numF;
+    if (W.mode !== 'value' && W.mode !== 'count' && !numF.some(f => f.name === W.field)) W.field = numF.length ? numF[0].name : '';
+    h += `<label class="f">Ce que je veux obtenir</label><div class="row">
+      <select data-w="mode" onchange="readWiz();renderWiz()">${[['value', "la valeur d'un champ (sur une ligne)"], ['count', 'le nombre de lignes'], ['avg', "la moyenne d'un champ"], ['sum', "la somme d'un champ"], ['min', "le minimum d'un champ"], ['max', "le maximum d'un champ"]].map(m => `<option value="${m[0]}"${m[0] === W.mode ? ' selected' : ''}>${m[1]}</option>`).join('')}</select>
+      ${W.mode === 'count' ? '' : `<select data-w="field" onchange="readWiz();renderWiz()">${fieldsFor.map(f => `<option value="${esc(f.name)}"${f.name === W.field ? ' selected' : ''}>${esc(f.label)}</option>`).join('')}</select>`}</div>
+      ${W.mode !== 'value' && W.mode !== 'count' && !numF.length ? '<div class="warnbox">Ce jeu de données n\'a pas de champ numérique.</div>' : ''}
+      <label class="f">Garder seulement les lignes où…</label><div class="row">
+      <select data-w="ff" onchange="readWiz();W.fv='';odsValues()"><option value="">(toutes les lignes)</option>${W.fields.map(f => `<option value="${esc(f.name)}"${f.name === W.ff ? ' selected' : ''}>${esc(f.label)}</option>`).join('')}</select>
+      ${W.ff ? `= <input data-w="fv" list="wfvl" value="${esc(W.fv)}" placeholder="choisis ou tape une valeur" style="min-width:220px"><datalist id="wfvl">${W.vals.map(v => `<option value="${esc(v)}">`).join('')}</datalist>` : ''}</div>`;
+    if (W.mode === 'value') {
+      const ordF = W.fields.filter(f => isNumT(f.type) || isDateT(f.type));
+      h += `<label class="f">S'il reste plusieurs lignes, prendre…</label><select data-w="order"><option value="">la première trouvée</option>${ordF.map(f => {
+        const d = isDateT(f.type);
+        return `<option value="${esc(odsId(f.name))} desc"${W.order === odsId(f.name) + ' desc' ? ' selected' : ''}>${d ? 'la plus récente' : 'la plus grande'} selon « ${esc(f.label)} »</option><option value="${esc(odsId(f.name))} asc"${W.order === odsId(f.name) + ' asc' ? ' selected' : ''}>${d ? 'la plus ancienne' : 'la plus petite'} selon « ${esc(f.label)} »</option>`;
+      }).join('')}</select>`;
+    }
+    h += `<details${W.where ? ' open' : ''}><summary>Filtre avancé (langage ODSQL, pour les enseignants)</summary><input class="w" data-w="where" value="${esc(W.where)}" placeholder='ex : nbvelos > 0 and etat = "CONNECTEE"'></details>
+      <div class="row" style="margin-top:12px"><button class="btn pri" onclick="odsRun()">Voir le résultat ›</button></div>`;
+    return h;
+  }
+  return `<h2>🔎 ${esc(W.title || W.ds)}</h2>${bar}<button class="btn sm" onclick="readWiz();odsBack()">‹ Modifier la requête</button>` + finalHTML();
+}
+// Tableau complet du jeu de données, page par page (recherche et tri faits par le portail)
+const PAGE_SIZES = [10, 20, 50, 100];
+function odsPages() { return Math.max(1, Math.min(Math.ceil((W.rtotal || 0) / W.ps), Math.floor(10000 / W.ps))); }
+function odsTableHTML() {
+  const pages = odsPages(), from = W.rtotal ? W.page * W.ps + 1 : 0, to = Math.min((W.page + 1) * W.ps, W.rtotal || 0);
+  const pg = `<span class="mute">lignes ${from}–${to} sur ${W.rtotal || 0}${W.tq ? ' trouvées' : ''}</span>
+    <button class="btn sm" onclick="odsPage(0)"${W.page ? '' : ' disabled'}>«</button><button class="btn sm" onclick="odsPage(W.page-1)"${W.page ? '' : ' disabled'}>‹ précédente</button>
+    <span>page <input type="number" min="1" max="${pages}" value="${W.page + 1}" style="width:64px" onchange="odsPage(this.value-1)"> / ${pages}</span>
+    <button class="btn sm" onclick="odsPage(W.page+1)"${W.page < pages - 1 ? '' : ' disabled'}>suivante ›</button><button class="btn sm" onclick="odsPage(${pages - 1})"${W.page < pages - 1 ? '' : ' disabled'}>»</button>`;
+  const nav = `<div class="pager"><input id="odsTq" placeholder="🔍 chercher dans le tableau…" value="${esc(W.tq)}" onkeydown="if(event.key==='Enter')odsTSearch()" style="flex:1;min-width:160px">
+    <button class="btn sm" onclick="odsTSearch()">Chercher</button>${W.tq ? '<button class="btn sm" onclick="$(\'#odsTq\').value=\'\';odsTSearch()">✖</button>' : ''}
+    <select onchange="W.ps=+this.value;odsPage(0)">${PAGE_SIZES.map(n => `<option value="${n}"${n === W.ps ? ' selected' : ''}>${n} par page</option>`).join('')}</select></div><div class="pager">${pg}</div>`;
+  let h = nav + '<div class="tblx"><table><tr>' + W.fields.map((f, k) => {
+    const so = W.tsort === odsId(f.name) + ' asc' ? '▲' : W.tsort === odsId(f.name) + ' desc' ? '▼' : '↕';
+    return `<th class="${f.name === W.field ? 'sel' : ''}" onclick="odsPickCol(${k})" title="${esc(f.name)} (${esc(f.type)})"><span class="srt${so !== '↕' ? ' on' : ''}" onclick="event.stopPropagation();odsSort(${k})" title="trier">${so}</span>${esc(f.label)}<br><small>${typeIcon(f.type)}</small></th>`;
+  }).join('') + '</tr>';
+  W.rows.forEach((r, ri) => {
+    const sel = W.ff && String(W.fv) !== '' && String(r[W.ff]) === String(W.fv);
+    h += `<tr${sel ? ' class="rsel"' : ''}>` + W.fields.map((f, k) => `<td${f.name === W.field ? ' class="csel"' : ''} onclick="odsPickCell(${ri},${k})">${esc(cell(r[f.name]))}</td>`).join('') + '</tr>';
+  });
+  if (!W.rows.length) h += `<tr><td colspan="${W.fields.length}" class="mute">Aucune ligne.</td></tr>`;
+  h += '</table></div>';
+  if ((W.rtotal || 0) > 10000 && !W.tq) h += '<p class="mute">Le portail ne montre que les 10 000 premières lignes : utilise la recherche pour trouver les autres.</p>';
+  return h + (W.rows.length > 8 ? `<div class="pager">${pg}</div>` : '');
+}
+async function odsRows() {
+  const p = new URLSearchParams({limit: String(W.ps), offset: String(W.page * W.ps)});
+  if (W.tq.trim()) p.set('where', '"' + W.tq.trim().replace(/"/g, '') + '"');
+  if (W.tsort) p.set('order_by', W.tsort);
+  const rec = await getJSON(odsBase(W.portal) + '/' + encodeURIComponent(W.ds) + '/records?' + p.toString().replace(/\+/g, '%20'));
+  W.rows = rec.results || []; W.rtotal = rec.total_count;
+  if (!W.tq && W.total == null) W.total = rec.total_count;
+}
+async function odsReload() {
+  readWiz(); W.busy = true; W.err = ''; renderWiz();
+  try { await odsRows(); } catch (e) { W.err = 'Lecture du tableau impossible : ' + e.message; }
+  W.busy = false; renderWiz();
+}
+function odsPage(n) { W.page = Math.max(0, Math.min(+n || 0, odsPages() - 1)); odsReload(); }
+function odsTSearch() { W.tq = ($('#odsTq') || {}).value || ''; W.page = 0; odsReload(); }
+function odsSort(k) {
+  const f = odsId(W.fields[k].name);
+  W.tsort = W.tsort === f + ' asc' ? f + ' desc' : W.tsort === f + ' desc' ? '' : f + ' asc';
+  W.page = 0; odsReload();
+}
+function odsPickCol(k) {
+  readWiz();
+  W.field = W.fields[k].name;
+  if (W.mode !== 'value' && W.mode !== 'count' && !isNumT(W.fields[k].type)) W.mode = 'value';
+  renderWiz();
+}
+// Une case cliquée : sa colonne = le champ lu ; sa ligne = retrouvée grâce à une colonne qui la nomme
+function odsPickCell(ri, k) {
+  readWiz();
+  const r = W.rows[ri], f = W.fields[k];
+  W.field = f.name;
+  if (W.mode !== 'value') W.mode = 'value';
+  const idf = odsIdField(r, f.name);
+  W.ff = idf; W.fv = idf ? String(r[idf]) : '';
+  renderWiz();
+  if (idf) odsValues(true).then(() => { if (W && W.step === 2) renderWiz(); });
+}
+function odsIdField(r, not) {
+  const ok = f => f.name !== not && r[f.name] != null && r[f.name] !== '' && typeof r[f.name] !== 'object' && !isDateT(f.type);
+  const named = /^(nom|name|libelle|label|intitule|titre|station|ident|identifiant|id|code|numero)/i;
+  const f = W.fields.find(x => ok(x) && named.test(x.name) && !isNumT(x.type)) || W.fields.find(x => ok(x) && named.test(x.name))
+    || W.fields.find(x => ok(x) && !isNumT(x.type)) || W.fields.find(ok);
+  return f ? f.name : '';
+}
+const typeIcon = t => (isNumT(t) ? '🔢 nombre' : isDateT(t) ? '📅 date' : t === 'boolean' ? '✔ oui/non' : '🔤 texte');
+const cell = v => (v == null ? '' : typeof v === 'object' ? JSON.stringify(v) : String(v)).slice(0, 400);
+
+async function odsSearch() {
+  readWiz(); W.busy = true; W.err = ''; W.list = null; renderWiz();
+  const base = odsBase(W.portal);
+  const p = new URLSearchParams({limit: '30'});
+  if (W.q.trim()) p.set('where', '"' + W.q.trim().replace(/"/g, '') + '"');
+  try {
+    let j;
+    try { j = await getJSON(base + '?' + p + '&select=' + encodeURIComponent('dataset_id,title,records_count,has_records')); }
+    catch (e) { j = await getJSON(base + '?' + p); }
+    W.list = (j.results || []).map(r => ({id: r.dataset_id, t: r.title || g(r, 'metas.default.title') || r.dataset_id,
+      n: r.records_count != null ? r.records_count : g(r, 'metas.default.records_count'), has: r.has_records !== false}));
+  } catch (e) { W.err = 'Recherche impossible : ' + e.message; }
+  W.busy = false; renderWiz();
+}
+async function odsOpen(id) {
+  if (W.ds !== id) { W.field = ''; W.ff = ''; W.fv = ''; W.order = ''; W.where = ''; W.mode = 'value'; }
+  W.ds = id; W.step = 2; W.busy = true; W.err = ''; W.fields = []; renderWiz();
+  try {
+    const base = odsBase(W.portal) + '/' + encodeURIComponent(id);
+    const meta = await getJSON(base);
+    W.title = g(meta, 'metas.default.title') || id;
+    W.desc = strip(g(meta, 'metas.default.description')).slice(0, 280);
+    W.fields = (meta.fields || []).filter(f => !/geo|shape|file|image/.test(f.type)).map(f => ({name: f.name, label: f.label || f.name, type: f.type}));
+    W.page = 0; W.tq = ''; W.tsort = ''; W.total = null; W.ps = W.ps || 20;
+    await odsRows();
+    if (!W.field || !W.fields.some(f => f.name === W.field)) W.field = (W.fields.find(f => isNumT(f.type)) || W.fields[0] || {}).name || '';
+    if (W.ff) await odsValues(true);
+  } catch (e) { W.err = 'Jeu de données illisible : ' + e.message; }
+  W.busy = false; renderWiz();
+}
+async function odsBack() { if (!W.fields.length) await odsOpen(W.ds); else { W.step = 2; renderWiz(); } }
+async function odsValues(silent) {
+  W.vals = [];
+  if (!W.ff) { if (!silent) renderWiz(); return; }
+  if (!silent) { W.busy = true; renderWiz(); }
+  try {
+    const f = odsId(W.ff);
+    const j = await getJSON(odsBase(W.portal) + '/' + encodeURIComponent(W.ds) + '/records?' + new URLSearchParams({select: f + ', count(*) as n', group_by: f, order_by: f, limit: '300'}));
+    W.vals = (j.results || []).map(r => { const k = Object.keys(r).find(x => x !== 'n'); return r[k]; }).filter(v => v != null && v !== '');
+  } catch (e) { /* liste facultative */ }
+  if (!silent) { W.busy = false; renderWiz(); }
+}
+function odsUrl() {
+  const fid = odsId(W.field);
+  const sel = W.mode === 'value' ? fid + ' as v' : W.mode === 'count' ? 'count(*) as v' : W.mode + '(' + fid + ') as v';
+  const p = new URLSearchParams({select: sel});
+  const wh = [];
+  if (W.ff && String(W.fv) !== '') wh.push(odsId(W.ff) + ' = ' + odsLit(W.fv, fType(W.ff)));
+  if (W.where.trim()) wh.push('(' + W.where.trim() + ')');
+  if (wh.length) p.set('where', wh.join(' and '));
+  if (W.mode === 'value' && W.order) p.set('order_by', W.order);
+  p.set('limit', '1');
+  return odsBase(W.portal) + '/' + encodeURIComponent(W.ds) + '/records?' + p.toString().replace(/\+/g, '%20');
+}
+async function odsRun() {
+  readWiz();
+  if (W.mode !== 'count' && !W.field) { W.err = 'Choisis un champ.'; return renderWiz(); }
+  W.busy = true; W.err = ''; renderWiz();
+  try {
+    const url = odsUrl(), j = await getJSON(url), r = (j.results || [])[0];
+    W.url = url; W.path = 'results.0.v'; W.res = {v: r ? r.v : null, total: j.total_count};
+    const f = W.fields.find(x => x.name === W.field) || {};
+    if (W.editIdx < 0 || W.id == null) {
+      W.id = uniqueId(W.mode === 'count' ? 'nb_' + W.ds : W.mode === 'value' ? W.field : W.mode + '_' + W.field, W.editIdx);
+      W.label = (W.mode === 'count' ? 'Nombre de lignes' : (W.mode === 'value' ? '' : {avg: 'Moyenne', sum: 'Somme', min: 'Minimum', max: 'Maximum'}[W.mode] + ' de ') + (f.label || W.field)) + (W.fv ? ' — ' + W.fv : '') + ' (' + (W.title || W.ds) + ')';
+      W.k = W.mode === 'value' && isDateT(f.type) ? 'minutes' : W.mode === 'value' && !isNumT(f.type) && f.type !== 'boolean' ? 'text' : 'num';
+      W.every = 300; W.dec = W.mode === 'avg' ? 1 : 0;
+    }
+    W.step = 3;
+  } catch (e) { W.err = 'Requête refusée : ' + e.message; }
+  W.busy = false; renderWiz();
+}
+
+// --- Adresse JSON quelconque ---
+const OM = 'https://api.open-meteo.com/v1/forecast?latitude=44.84&longitude=-0.58&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,cloud_cover&timezone=Europe%2FParis';
+const JEX = [
+  ['🌡️ Météo à Bordeaux (Open-Meteo)', OM],
+  ["🌫️ Qualité de l'air à Bordeaux (Open-Meteo)", 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=44.84&longitude=-0.58&current=european_aqi,pm10,pm2_5'],
+  ['🔎 Exemple Opendatasoft brut', 'https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets?limit=2&select=dataset_id']
+];
+function wizJSON() { W = {kind: 'json', step: 1, url: '', data: null, path: '', editIdx: -1}; renderWiz(); }
+function wizJsonHTML() {
+  const bar = stepsBar(W.step === 3 ? 2 : 1, ['Charger et cliquer sur la valeur', 'Valider']);
+  if (W.step === 3) return `<h2>🌐 Adresse web</h2>${bar}<button class="btn sm" onclick="readWiz();jsonBack()">‹ Choisir une autre valeur</button>` + finalHTML();
+  let h = `<h2>🌐 Adresse web (JSON)</h2>${bar}<label class="f">Adresse</label><div class="row"><input data-w="url" class="w" value="${esc(W.url)}" placeholder="https://…" style="flex:1" onkeydown="if(event.key==='Enter')jsonLoad()"><button class="btn pri" onclick="jsonLoad()">Charger</button></div>
+    <div style="margin-top:6px"><span class="mute">Exemples : </span>${JEX.map((x, i) => `<span class="chip" onclick="W.url=JEX[${i}][1];jsonLoad(true)">${esc(x[0])}</span>`).join('')}</div>`;
+  if (W.data !== null && W.data !== undefined) {
+    h += `<label class="f">Clique sur la valeur à utiliser</label><div class="tree" id="jtree">${treeHTML(W.data, '', 0)}</div>
+      <label class="f">ou écris son chemin</label><div class="row"><input data-w="path" value="${esc(W.path)}" placeholder="ex : current.temperature_2m"><button class="btn" onclick="readWiz();jsonPick(W.path)">Utiliser</button></div>`;
+    W.after = () => { const t = $('#jtree'); if (t) t.onclick = e => { const el = e.target.closest('[data-p]'); if (el) jsonPick(el.dataset.p); }; };
+  }
+  return h;
+}
+function treeHTML(v, path, depth) {
+  if (v === null || typeof v !== 'object') return `<span class="leaf ${typeof v === 'string' ? 'vs' : 'vn'}" data-p="${esc(path)}">${esc(cut(JSON.stringify(v), 60))}</span>`;
+  const arr = Array.isArray(v), keys = arr ? v.slice(0, 10).map((_, i) => i) : Object.keys(v).slice(0, 80);
+  let h = '<ul>';
+  keys.forEach(k => {
+    const p = path === '' ? String(k) : path + '.' + k, c = v[k];
+    if (c !== null && typeof c === 'object') {
+      h += `<li><span class="k">${esc(k)}</span> ${Array.isArray(c) ? `<span class="leaf vn" data-p="${esc(p)}" title="utiliser le nombre d'éléments">[${c.length} éléments]</span>` : ''}${depth < 7 ? treeHTML(c, p, depth + 1) : ' …'}</li>`;
+    } else h += `<li><span class="k">${esc(k)}</span> : ${treeHTML(c, p, depth + 1)}</li>`;
+  });
+  if (arr && v.length > 10) h += `<li class="mute">… et ${v.length - 10} autres</li>`;
+  return h + '</ul>';
+}
+function getPath(o, path) {
+  const t = String(path).replace(/\[/g, '.').replace(/\]/g, '').split('.').filter(x => x !== '');
+  let v = o;
+  for (const k of t) { if (v == null) return undefined; v = v[Array.isArray(v) ? +k : k]; }
+  return v;
+}
+async function jsonLoad(fromChip) {
+  if (!fromChip) readWiz();
+  W.url = String(W.url || '').trim();
+  if (!/^https?:\/\//.test(W.url)) { W.err = "L'adresse doit commencer par http:// ou https://"; return renderWiz(); }
+  W.busy = true; W.err = ''; W.data = null; renderWiz();
+  try { W.data = await getJSON(W.url); } catch (e) { W.err = 'Chargement impossible : ' + e.message; }
+  W.busy = false; renderWiz();
+}
+async function jsonBack() { W.step = 1; if (W.data == null && W.url) await jsonLoad(true); else renderWiz(); }
+function jsonPick(p) {
+  let v = W.data == null ? undefined : getPath(W.data, p);
+  if (Array.isArray(v)) v = v.length;
+  if (v === undefined) { W.err = 'Ce chemin ne correspond à aucune valeur.'; return renderWiz(); }
+  W.err = ''; W.path = p; W.res = {v};
+  if (W.editIdx < 0 || W.id == null) {
+    const last = String(p).split('.').filter(x => isNaN(+x)).pop() || 'valeur';
+    W.id = uniqueId(last, W.editIdx); W.label = last + ' (' + (W.url.split('/')[2] || '') + ')';
+    W.k = typeof v === 'string' ? (/^\d{4}-\d\d-\d\d/.test(v) ? 'minutes' : 'text') : 'num';
+    W.every = 600; W.dec = typeof v === 'number' && !Number.isInteger(v) ? 1 : 0;
+  }
+  W.step = 3; renderWiz();
+}
+
+// --- Catalogue de données prêtes, rangées par familles ---
+// Toutes les adresses ont été vérifiées : réponse courte (quelques centaines d'octets), sans clé sauf la SNCF.
+const E = encodeURIComponent;
+// Valeurs qu'on ne trouve qu'en « en plus » : {n, p, k, u, id, dec, mul}
+const ex = (n, p, id, x) => Object.assign({n, p, id}, x);
+const AGE_MIN = (p, id) => ex('Âge de la mesure (minutes)', p, id || 'age_mesure', {k: 'minutes', mul: -1, u: 'min'});
+const OMF = c => 'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=' + c + '&timezone=Europe%2FParis';
+const OMD = c => 'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=' + c + '&forecast_days=1&timezone=Europe%2FParis';
+const OMA = c => 'https://air-quality-api.open-meteo.com/v1/air-quality?latitude={lat}&longitude={lon}&current=' + c + '&timezone=Europe%2FParis';
+const OMM = c => 'https://marine-api.open-meteo.com/v1/marine?latitude={lat}&longitude={lon}&current=' + c + '&timezone=Europe%2FParis';
+const OMMH = c => 'https://marine-api.open-meteo.com/v1/marine?latitude={lat}&longitude={lon}&hourly=' + c + '&past_hours=0&forecast_hours=6&timezone=Europe%2FParis';
+const ODS = (host, ds) => `https://${host}/api/explore/v2.1/catalog/datasets/${ds}/records`;
+const ODRE = f => ODS('odre.opendatasoft.com', 'eco2mix-national-tr') + '?select=' + f + '%20as%20v&where=' + f + '%20is%20not%20null&order_by=date_heure%20desc&limit=1';
+const CARBU = 'prix-des-carburants-en-france-flux-instantane-v2';
+const CARBU_FR = f => ODS('data.economie.gouv.fr', CARBU) + '?select=avg(' + f + ')%20as%20v&limit=1';
+const CARBU_PRES = c => ODS('data.economie.gouv.fr', CARBU) + '?select=' + c + '_prix,' + c + '_maj,ville,adresse,cp,horaires_automate_24_24&where=' + E("within_distance(geom, geom'POINT(") + '{lon}%20{lat}' + E(")', 10km) and " + c + '_prix is not null') + '&order_by=' + c + '_prix%20asc&limit=1';
+const carbu = (n, c) => ({n, u: '€/L', url: CARBU_PRES(c), p: 'results.0.' + c + '_prix', id: c + '_pres', dec: 3, every: 3600, x: [
+  ex('Ville de la station la moins chère', 'results.0.ville', 'ville_' + c, {k: 'text'}), ex('Adresse de la station', 'results.0.adresse', 'adresse_' + c, {k: 'text'}),
+  ex('Code postal de la station', 'results.0.cp', 'cp_' + c, {k: 'text'}), ex('Station ouverte 24 h/24', 'results.0.horaires_automate_24_24', 'h24_' + c, {k: 'text'}),
+  ex('Heures depuis la mise à jour du prix', 'results.0.' + c + '_maj', 'maj_' + c, {k: 'minutes', mul: -1 / 60, dec: 1, u: 'h'})]});
+const VAC_ALL = () => VAC('description,start_date,end_date');
+const VAC = f => ODS('data.education.gouv.fr', 'fr-en-calendrier-scolaire') + '?select=' + f + '&where=' + E('location="') + '{code}' + E('" and end_date>now() and population!="Enseignants"') + '&order_by=start_date&limit=1';
+const TRAIN_X = [
+  ex('Numéro du prochain train', 'departures.0.display_informations.headsign', 'train_num', {k: 'text'}),
+  ex('Minutes avant le départ prévu (horaire sans retard)', 'departures.0.stop_date_time.base_departure_date_time', 'train_prevu', {k: 'minutes'}),
+  ex('Destination du train suivant', 'departures.1.display_informations.direction', 'train2_dest', {k: 'text'}),
+  ex('Type du train suivant', 'departures.1.display_informations.commercial_mode', 'train2_type', {k: 'text'})];
+const SNCF = n => 'https://api.sncf.com/v1/coverage/sncf/stop_areas/stop_area:SNCF:{code}/departures?count=' + n + '&data_freshness=realtime&disable_geojson=true&depth=0';
+const HUB = 'https://hubeau.eaufrance.fr/api';
+const USGS = 'https://earthquake.usgs.gov/fdsnws/event/1/';  // réponses minuscules (pas les gros flux « summary »)
+const LAST = USGS + 'query?format=geojson&minmagnitude=4.5&orderby=time&limit=1';
+const FX = c => 'https://api.frankfurter.dev/v1/latest?base=EUR&symbols=' + c;
+// Une adresse par famille : toutes les données d'une même famille sont lues en UNE requête par l'objet
+// (et les autres valeurs de la réponse peuvent être ajoutées en un clic).
+const OM_CUR = OMF('temperature_2m,apparent_temperature,relative_humidity_2m,dew_point_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,precipitation,snowfall,cloud_cover,visibility,pressure_msl,shortwave_radiation,weather_code,cape,soil_temperature_0cm,is_day');
+const OM_DAY = OMD('precipitation_probability_max,temperature_2m_max,temperature_2m_min,sunshine_duration,daylight_duration,sunrise,sunset');
+const OM_AIR = OMA('european_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,uv_index,dust,grass_pollen,birch_pollen,alder_pollen,ragweed_pollen,olive_pollen,mugwort_pollen');
+const OM_MER = OMM('sea_level_height_msl,wave_height,wave_period,wave_direction,swell_wave_height,sea_surface_temperature,ocean_current_velocity,ocean_current_direction');
+const ODRE_ALL = ODS('odre.opendatasoft.com', 'eco2mix-national-tr') + '?select=taux_co2,consommation,prevision_j,nucleaire,eolien,eolien_offshore,solaire,hydraulique,bioenergies,gaz,charbon,fioul,pompage,ech_physiques,date_heure&where=' + E('taux_co2 is not null') + '&order_by=date_heure%20desc&limit=1';
+const FX_ALL = FX('USD,GBP,CHF,JPY,CAD,CNY');
+const CRYPTO = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=eur';
+const om = (n, u, c, id, x) => Object.assign({n, u, url: OM_CUR, p: 'current.' + c, id}, x);
+const omd = (n, u, c, id, x) => Object.assign({n, u, url: OM_DAY, p: 'daily.' + c + '.0', id, every: 3600}, x);
+const oma = (n, u, c, id, x) => Object.assign({n, u, url: OM_AIR, p: 'current.' + c, id}, x);
+const omm = (n, u, c, id, x) => Object.assign({n, u, url: OM_MER, p: 'current.' + c, id, dec: 1}, x);
+const odre = (n, f, id, x) => Object.assign({n, u: 'MW', url: ODRE_ALL, p: 'results.0.' + f, id}, x);
+const fx = (n, c, id) => ({n, u: c, url: FX_ALL, p: 'rates.' + c, id, dec: 2, every: 21600});
+// Stations ou parkings d'un portail Opendatasoft, choisis dans une liste triée par distance
+const st = (n, u, id, o) => ({n, u, id, pick: 'ods', o, every: 300});
+const PARIS = {host: 'opendata.paris.fr', ds: 'velib-disponibilite-en-temps-reel', idf: 'stationcode', namef: 'name', geof: 'coordonnees_geo', city: [48.857, 2.352], ville: 'Paris', f: [['Vélos disponibles', 'numbikesavailable', 'vélos'], ['Vélos mécaniques', 'mechanical', 'vélos'], ['Vélos électriques', 'ebike', 'vélos'], ['Places libres', 'numdocksavailable', 'places'], ['Capacité de la station', 'capacity', 'places'], ['Nom de la station', 'name', 'texte', 'text']]};
+const BDX_V = {host: 'datahub.bordeaux-metropole.fr', ds: 'ci_vcub_p', idf: 'ident', namef: 'nom', geof: 'geo_point_2d', city: [44.838, -0.579], ville: 'Bordeaux', f: [['Vélos disponibles', 'nbvelos', 'vélos'], ['Vélos électriques', 'nbelec', 'vélos'], ['Vélos classiques', 'nbclassiq', 'vélos'], ['Places libres', 'nbplaces', 'places'], ['État de la station', 'etat', 'texte', 'text'], ['Nom de la station', 'nom', 'texte', 'text']]};
+const BDX_P = {host: 'datahub.bordeaux-metropole.fr', ds: 'st_park_p', idf: 'ident', namef: 'nom', geof: 'geo_point_2d', city: [44.838, -0.579], ville: 'Bordeaux', f: [['Places libres', 'libres', 'places'], ['Places au total', 'total', 'places'], ['État du parking', 'etat', 'texte', 'text'], ['Nom du parking', 'nom', 'texte', 'text']]};
+const REN_V = {host: 'data.rennesmetropole.fr', ds: 'etat-des-stations-le-velo-star-en-temps-reel', idf: 'idstation', namef: 'nom', geof: 'coordonnees', city: [48.111, -1.68], ville: 'Rennes', f: [['Vélos disponibles', 'nombrevelosdisponibles', 'vélos'], ['Places libres', 'nombreemplacementsdisponibles', 'places'], ['Emplacements en service', 'nombreemplacementsactuels', 'places'], ['Nom de la station', 'nom', 'texte', 'text']]};
+const REN_P = {host: 'data.rennesmetropole.fr', ds: 'tco-parcsrelais-star-etat-tr', idf: 'idparc', namef: 'nom', geof: 'coordonnees', city: [48.111, -1.68], ville: 'Rennes', f: [['Places libres', 'jrdinfosoliste', 'places'], ['Capacité', 'capacitesoliste', 'places'], ['Places libres pour voitures électriques', 'jrdinfoelectrique', 'places'], ['Remplissage', 'etatremplissage', 'texte', 'text'], ['Nom du parking-relais', 'nom', 'texte', 'text']]};
+const NAN_P = {host: 'data.nantesmetropole.fr', ds: '244400404_parkings-publics-nantes-disponibilites', idf: 'grp_identifiant', namef: 'grp_nom', geof: 'location', city: [47.218, -1.554], ville: 'Nantes', f: [['Places libres', 'grp_disponible', 'places'], ['Capacité', 'grp_exploitation', 'places'], ['Nom du parking', 'grp_nom', 'texte', 'text']]};
+const NAN_R = {host: 'data.nantesmetropole.fr', ds: '244400404_parcs-relais-nantes-metropole-disponibilites', idf: 'grp_identifiant', namef: 'grp_nom', geof: 'location', city: [47.218, -1.554], ville: 'Nantes', f: [['Places libres', 'grp_disponible', 'places'], ['Capacité', 'grp_exploitation', 'places'], ['Nom du parking-relais', 'grp_nom', 'texte', 'text']]};
+const STR_V = {host: 'data.strasbourg.eu', ds: 'stations-velhop', idf: 'id', namef: 'na', geof: 'point_geo', city: [48.583, 7.746], ville: 'Strasbourg', f: [['Vélos disponibles', 'av', 'vélos'], ['Places libres', 'fr', 'places'], ['Emplacements', 'to', 'places'], ['Nom de la station', 'na', 'texte', 'text']]};
+const STR_P = {host: 'data.strasbourg.eu', ds: 'occupation-parkings-temps-reel', idf: 'idsurfs', namef: 'nom_parking', city: [48.583, 7.746], ville: 'Strasbourg', f: [['Places libres', 'libre', 'places'], ['Places au total', 'total', 'places'], ['État du parking', 'etat_descriptif', 'texte', 'text'], ['Nom du parking', 'nom_parking', 'texte', 'text']]};
+// Horloge, calendrier et lune : calculés par l'objet lui-même (sans Internet)
+const CLOCK = [
+  ['heure', 'Heure (14,5 = 14 h 30)', 0, 24, '14:30'], ['minute', 'Minutes (0 à 59)', 0, 59], ['seconde', 'Secondes (0 à 59)', 0, 59],
+  ['jour_semaine', 'Jour de la semaine (1 = lundi … 7 = dimanche)', 1, 7, 'lundi'], ['jour_mois', 'Jour du mois (1 à 31)', 1, 31, '19 novembre'],
+  ['mois', 'Mois (1 à 12)', 1, 12, 'novembre'], ['jour_annee', "Jour de l'année (1 à 366)", 1, 366],
+  ['lune', 'Lune : partie éclairée (%)', 0, 100, 'pleine lune'], ['lune_age', 'Âge de la lune (jours, 0 = nouvelle lune)', 0, 29.5, 'premier quartier']];
+const FAM = [
+  {c: '🌤️ Météo', d: 'Open-Meteo, au lieu choisi', items: [
+    om('Température', '°C', 'temperature_2m', 'temp', {dec: 1}),
+    om('Température ressentie', '°C', 'apparent_temperature', 'ressenti', {dec: 1}),
+    om("Humidité de l'air", '%', 'relative_humidity_2m', 'humidite'),
+    om('Point de rosée', '°C', 'dew_point_2m', 'rosee', {dec: 1, tip: 'température à laquelle la buée ou la rosée apparaissent'}),
+    om('Vent moyen', 'km/h', 'wind_speed_10m', 'vent'),
+    om('Rafales de vent', 'km/h', 'wind_gusts_10m', 'rafales'),
+    om('Direction du vent', '° (0 = nord, 90 = est)', 'wind_direction_10m', 'dir_vent', {tip: 'idéal pour une girouette sur servo ou moteur pas à pas'}),
+    om('Pluie en ce moment', 'mm', 'precipitation', 'pluie', {dec: 1}),
+    om('Neige en ce moment', 'cm', 'snowfall', 'neige', {dec: 1}),
+    om('Couverture nuageuse', '%', 'cloud_cover', 'nuages'),
+    om('Visibilité', 'km', 'visibility', 'visibilite', {mul: 0.001, dec: 1, tip: 'brouillard sous 1 km'}),
+    om('Pression atmosphérique', 'hPa', 'pressure_msl', 'pression'),
+    om('Ensoleillement (rayonnement solaire)', 'W/m²', 'shortwave_radiation', 'soleil', {tip: 'environ 1000 W/m² en plein soleil d\'été : parfait pour un panneau solaire'}),
+    om('Code météo', '0 = ciel clair … 95 = orage', 'weather_code', 'code_meteo', {tip: '0 clair, 1-3 nuageux, 45 brouillard, 51-67 pluie, 71-77 neige, 80-82 averses, 95-99 orage'}),
+    om('Risque d\'orage (énergie CAPE)', 'J/kg', 'cape', 'orage', {tip: 'au-dessus de 1000 J/kg, des orages sont possibles'}),
+    om('Température du sol', '°C', 'soil_temperature_0cm', 'temp_sol', {dec: 1}),
+    om('Jour (1) ou nuit (0)', '', 'is_day', 'jour'),
+    omd("Risque de pluie aujourd'hui", '%', 'precipitation_probability_max', 'risque_pluie'),
+    omd("Température max aujourd'hui", '°C', 'temperature_2m_max', 'tmax', {dec: 1}),
+    omd("Température min aujourd'hui", '°C', 'temperature_2m_min', 'tmin', {dec: 1}),
+    omd("Durée d'ensoleillement aujourd'hui", 'h', 'sunshine_duration', 'ensoleillement', {mul: 1 / 3600, dec: 1}),
+    omd('Durée du jour', 'h', 'daylight_duration', 'duree_jour', {mul: 1 / 3600, dec: 2}),
+    omd('Lever du soleil', 'minutes', 'sunrise', 'lever', {k: 'minutes', tip: 'compte à rebours : négatif une fois le soleil levé'}),
+    omd('Coucher du soleil', 'minutes', 'sunset', 'coucher', {k: 'minutes', tip: 'compte à rebours avant le coucher du soleil'})
+  ]},
+  {c: '🌫️ Air et pollens', d: 'Open-Meteo (Copernicus CAMS, modèle européen), au lieu choisi', items: [
+    oma("Indice européen de qualité de l'air", '0–20 très bon … 100+ très mauvais', 'european_aqi', 'qualite_air'),
+    oma('Particules fines PM2.5', 'µg/m³', 'pm2_5', 'pm25', {dec: 1}),
+    oma('Particules PM10', 'µg/m³', 'pm10', 'pm10', {dec: 1}),
+    oma('Ozone', 'µg/m³', 'ozone', 'ozone'),
+    oma("Dioxyde d'azote", 'µg/m³', 'nitrogen_dioxide', 'no2', {dec: 1}),
+    oma('Indice UV', '', 'uv_index', 'uv', {dec: 1}),
+    oma('Poussières du Sahara', 'µg/m³', 'dust', 'sable'),
+    oma('Pollen de graminées', 'grains/m³', 'grass_pollen', 'pollen_herbe'),
+    oma('Pollen de bouleau', 'grains/m³', 'birch_pollen', 'pollen_bouleau'),
+    oma("Pollen d'aulne", 'grains/m³', 'alder_pollen', 'pollen_aulne'),
+    oma("Pollen d'ambroisie", 'grains/m³', 'ragweed_pollen', 'pollen_ambroisie'),
+    oma("Pollen d'olivier", 'grains/m³', 'olive_pollen', 'pollen_olivier'),
+    oma("Pollen d'armoise", 'grains/m³', 'mugwort_pollen', 'pollen_armoise')
+  ]},
+  {c: '💧 Rivières', d: "Hub'Eau (eaufrance) : stations de mesure près du lieu choisi", items: [
+    {n: "Hauteur d'une rivière", u: 'm', pick: 'hydro', url: HUB + '/v2/hydrometrie/observations_tr?code_entite={code}&grandeur_hydro=H&size=1&sort=desc&fields=resultat_obs,date_obs', p: 'data.0.resultat_obs', mul: 0.001, id: 'hauteur', dec: 2, x: [AGE_MIN('data.0.date_obs')]},
+    {n: "Débit d'une rivière", u: 'm³/s', pick: 'hydro', url: HUB + '/v2/hydrometrie/observations_tr?code_entite={code}&grandeur_hydro=Q&size=1&sort=desc&fields=resultat_obs,date_obs', p: 'data.0.resultat_obs', mul: 0.001, id: 'debit', dec: 1, x: [AGE_MIN('data.0.date_obs')]},
+    {n: "Température d'une rivière", u: '°C', pick: 'temp', url: HUB + '/v1/temperature/chronique?code_station={code}&size=1&sort=desc&fields=resultat,date_mesure_temp,heure_mesure_temp', p: 'data.0.resultat', id: 'temp_eau', dec: 1, every: 3600, x: [ex('Jours depuis la mesure', 'data.0.date_mesure_temp', 'age_mesure', {k: 'minutes', mul: -1 / 1440, u: 'jours'})], tip: 'beaucoup de stations ne mesurent plus : la date de la dernière mesure est affichée'},
+    {n: 'Débit prévu de la grande rivière la plus proche', u: 'm³/s', url: 'https://flood-api.open-meteo.com/v1/flood?latitude={lat}&longitude={lon}&daily=river_discharge&forecast_days=1', p: 'daily.river_discharge.0', id: 'debit_prevu', dec: 1, every: 21600, tip: 'modèle mondial GloFAS (Open-Meteo)'}
+  ]},
+  {c: '🌊 Mer et marées', d: 'Open-Meteo Marine : choisis un lieu sur la côte', items: [
+    omm('Niveau de la mer (marée)', 'm', 'sea_level_height_msl', 'maree', {dec: 2, tip: 'hauteur par rapport au niveau moyen, marée comprise (modèle, pas pour la navigation)'}),
+    {n: 'Niveau de la mer dans 3 h', u: 'm', url: OMMH('sea_level_height_msl'), p: 'hourly.sea_level_height_msl.3', id: 'maree_3h', dec: 2, every: 900, x: [1, 2, 4, 5].map(h => ex('Niveau de la mer dans ' + h + ' h', 'hourly.sea_level_height_msl.' + h, 'maree_' + h + 'h', {u: 'm', dec: 2})), tip: 'à comparer au niveau actuel : marée montante ou descendante'},
+    omm('Hauteur des vagues', 'm', 'wave_height', 'vagues'),
+    omm('Période des vagues', 's', 'wave_period', 'periode_vagues'),
+    omm('Direction des vagues', '° (d\'où elles viennent)', 'wave_direction', 'dir_vagues', {dec: 0}),
+    omm('Hauteur de la houle', 'm', 'swell_wave_height', 'houle'),
+    omm('Température de la mer', '°C', 'sea_surface_temperature', 'temp_mer'),
+    omm('Vitesse du courant marin', 'km/h', 'ocean_current_velocity', 'courant'),
+    omm('Direction du courant marin', '°', 'ocean_current_direction', 'dir_courant', {dec: 0})
+  ]},
+  {c: '⚡ Énergie', d: 'RTE éCO2mix (ODRÉ), couleur Tempo (api-couleur-tempo.fr, données RTE)', items: [
+    odre("Intensité carbone de l'électricité", 'taux_co2', 'co2_elec', {u: 'g CO₂/kWh', x: [
+      ex('Prévision de consommation du jour', 'results.0.prevision_j', 'prevision', {u: 'MW'}), ex('Éolien en mer', 'results.0.eolien_offshore', 'eolien_mer', {u: 'MW'}),
+      ex('Production au charbon', 'results.0.charbon', 'charbon', {u: 'MW'}), ex('Production au fioul', 'results.0.fioul', 'fioul', {u: 'MW'}),
+      ex('Pompage (stockage dans les barrages, négatif)', 'results.0.pompage', 'pompage', {u: 'MW'}), AGE_MIN('results.0.date_heure')]}),
+    odre("Consommation d'électricité en France", 'consommation', 'conso_elec'),
+    odre('Production nucléaire', 'nucleaire', 'nucleaire'),
+    odre('Production éolienne', 'eolien', 'eolien'),
+    odre('Production solaire', 'solaire', 'solaire'),
+    odre('Production hydraulique', 'hydraulique', 'hydraulique'),
+    odre('Production bioénergies', 'bioenergies', 'bioenergies'),
+    odre('Production au gaz', 'gaz', 'gaz_elec'),
+    odre("Échanges avec l'étranger (négatif = la France exporte)", 'ech_physiques', 'echanges'),
+    {n: "Couleur Tempo aujourd'hui", u: '1 bleu, 2 blanc, 3 rouge', url: 'https://www.api-couleur-tempo.fr/api/jourTempo/today', p: 'codeJour', id: 'tempo', every: 3600, tip: 'jours rouges : électricité chère, à économiser'},
+    {n: 'Couleur Tempo demain', u: '0 inconnue, 1 bleu, 2 blanc, 3 rouge', url: 'https://www.api-couleur-tempo.fr/api/jourTempo/tomorrow', p: 'codeJour', id: 'tempo_demain', every: 3600, tip: 'annoncée par RTE vers 11 h', x: [ex('Couleur Tempo demain (texte)', 'libCouleur', 'tempo_demain_txt', {k: 'text'})]},
+    {n: "Couleur Tempo aujourd'hui (texte)", u: 'texte', url: 'https://www.api-couleur-tempo.fr/api/jourTempo/today', p: 'libCouleur', k: 'text', id: 'tempo_txt', every: 3600}
+  ]},
+  {c: '🚆 Transports', d: 'SNCF (clé gratuite), vélos et parkings en temps réel des métropoles', items: [
+    {n: 'Minutes avant le prochain train', u: 'minutes', pick: 'gare', key: 'sncf', url: SNCF(2), p: 'departures.0.stop_date_time.departure_date_time', k: 'minutes', id: 'train', every: 120, x: TRAIN_X},
+    {n: 'Destination du prochain train', u: 'texte', pick: 'gare', key: 'sncf', url: SNCF(2), p: 'departures.0.display_informations.direction', k: 'text', id: 'train_dest', every: 120, x: TRAIN_X},
+    {n: 'Type du prochain train (TER, TGV…)', u: 'texte', pick: 'gare', key: 'sncf', url: SNCF(2), p: 'departures.0.display_informations.commercial_mode', k: 'text', id: 'train_type', every: 120, x: TRAIN_X},
+    {n: 'Minutes avant le train suivant', u: 'minutes', pick: 'gare', key: 'sncf', url: SNCF(2), p: 'departures.1.stop_date_time.departure_date_time', k: 'minutes', id: 'train2', every: 120, x: TRAIN_X},
+    st("Vélib' disponibles (Paris)", 'vélos', 'velos', Object.assign({valf: 'numbikesavailable'}, PARIS)),
+    st("Vélib' électriques disponibles (Paris)", 'vélos', 'velos_elec', Object.assign({valf: 'ebike'}, PARIS)),
+    st("Places libres à une station Vélib' (Paris)", 'places', 'places_velo', Object.assign({valf: 'numdocksavailable'}, PARIS)),
+    st('Vélos V³ disponibles (Bordeaux)', 'vélos', 'velos', Object.assign({valf: 'nbvelos'}, BDX_V)),
+    st('Places libres à une station V³ (Bordeaux)', 'places', 'places_velo', Object.assign({valf: 'nbplaces'}, BDX_V)),
+    st('Vélos STAR disponibles (Rennes)', 'vélos', 'velos', Object.assign({valf: 'nombrevelosdisponibles'}, REN_V)),
+    st('Vélos Vélhop disponibles (Strasbourg)', 'vélos', 'velos', Object.assign({valf: 'av'}, STR_V)),
+    st("Places libres d'un parking (Bordeaux)", 'places', 'parking', Object.assign({valf: 'libres'}, BDX_P)),
+    st("Places libres d'un parking (Nantes)", 'places', 'parking', Object.assign({valf: 'grp_disponible'}, NAN_P)),
+    st("Places libres d'un parking-relais (Nantes)", 'places', 'parking', Object.assign({valf: 'grp_disponible'}, NAN_R)),
+    st("Places libres d'un parking-relais (Rennes)", 'places', 'parking', Object.assign({valf: 'jrdinfosoliste'}, REN_P)),
+    st("Places libres d'un parking (Strasbourg)", 'places', 'parking', Object.assign({valf: 'libre'}, STR_P))
+  ]},
+  {c: '🏫 École', d: "Calendrier scolaire officiel (data.education.gouv.fr), selon l'académie", items: [
+    {n: 'Jours avant les prochaines vacances', u: 'jours', pick: 'acad', url: VAC_ALL(), p: 'results.0.start_date', k: 'minutes', mul: 1 / 1440, id: 'vacances', every: 21600, tip: 'négatif pendant les vacances'},
+    {n: 'Nom des prochaines vacances', u: 'texte', pick: 'acad', url: VAC_ALL(), p: 'results.0.description', k: 'text', id: 'vacances_nom', every: 21600},
+    {n: 'Jours avant la fin des prochaines vacances', u: 'jours', pick: 'acad', url: VAC_ALL(), p: 'results.0.end_date', k: 'minutes', mul: 1 / 1440, id: 'fin_vacances', every: 21600}
+  ]},
+  {c: '🕒 Horloge et lune', d: "calculées par l'objet lui-même, sans Internet (heure de Paris)", items:
+    CLOCK.map(c => ({n: c[1], u: '', clock: c[0], id: c[0]}))},
+  {c: '💶 Économie', d: 'Banque centrale européenne (Frankfurter), CoinGecko, prix des carburants (data.economie.gouv.fr)', items: [
+    fx('Dollar américain pour 1 €', 'USD', 'dollar'), fx('Livre sterling pour 1 €', 'GBP', 'livre'),
+    fx('Franc suisse pour 1 €', 'CHF', 'franc_suisse'), fx('Yen japonais pour 1 €', 'JPY', 'yen'),
+    fx('Dollar canadien pour 1 €', 'CAD', 'dollar_ca'), fx('Yuan chinois pour 1 €', 'CNY', 'yuan'),
+    {n: 'Bitcoin en euros', u: '€', url: CRYPTO, p: 'bitcoin.eur', id: 'bitcoin', every: 900},
+    {n: 'Ether en euros', u: '€', url: CRYPTO, p: 'ethereum.eur', id: 'ether', every: 900},
+    carbu('Gazole le moins cher à 10 km', 'gazole'), carbu('SP95 le moins cher à 10 km', 'sp95'),
+    carbu('SP95-E10 le moins cher à 10 km', 'e10'), carbu('SP98 le moins cher à 10 km', 'sp98'),
+    carbu('E85 le moins cher à 10 km', 'e85'), carbu('GPL le moins cher à 10 km', 'gplc'),
+    {n: 'Prix moyen du gazole en France', u: '€/L', url: CARBU_FR('gazole_prix'), p: 'results.0.v', id: 'gazole', dec: 3, every: 3600},
+    {n: 'Prix moyen du SP95 en France', u: '€/L', url: CARBU_FR('sp95_prix'), p: 'results.0.v', id: 'sp95', dec: 3, every: 3600},
+    {n: "Prix moyen de l'E85 en France", u: '€/L', url: CARBU_FR('e85_prix'), p: 'results.0.v', id: 'e85', dec: 3, every: 3600}
+  ]},
+  {c: '🌍 Terre et espace', d: 'USGS (séismes), NOAA (soleil), Open Notify (station spatiale)', items: [
+    {n: 'Séismes 4,5+ dans le monde (30 jours)', u: 'séismes', url: USGS + 'count?format=geojson&minmagnitude=4.5', p: 'count', id: 'seismes', every: 1800},
+    {n: 'Séismes à moins de 300 km du lieu (30 jours)', u: 'séismes', url: USGS + 'count?format=geojson&latitude={lat}&longitude={lon}&maxradiuskm=300', p: 'count', id: 'seismes_pres', every: 3600},
+    {n: 'Magnitude du dernier séisme 4,5+', u: '', url: LAST, p: 'features.0.properties.mag', id: 'magnitude', dec: 1, every: 900, x: [
+      ex('Profondeur du dernier séisme', 'features.0.geometry.coordinates.2', 'profondeur', {u: 'km'}), ex('Alerte tsunami (1 = oui)', 'features.0.properties.tsunami', 'tsunami'),
+      ex('Description du dernier séisme', 'features.0.properties.title', 'seisme_titre', {k: 'text'})]},
+    {n: 'Lieu du dernier séisme 4,5+', u: 'texte', url: LAST, p: 'features.0.properties.place', k: 'text', id: 'lieu_seisme', every: 900},
+    {n: 'Vitesse du vent solaire', u: 'km/s', url: 'https://services.swpc.noaa.gov/products/summary/solar-wind-speed.json', p: '0.proton_speed', id: 'vent_solaire', every: 600, tip: 'au-dessus de 600 km/s : aurores boréales possibles'},
+    {n: 'Latitude de la station spatiale (ISS)', u: '°', url: 'http://api.open-notify.org/iss-now.json', p: 'iss_position.latitude', id: 'iss_lat', dec: 1, every: 60},
+    {n: "Longitude de l'ISS", u: '°', url: 'http://api.open-notify.org/iss-now.json', p: 'iss_position.longitude', id: 'iss_lon', dec: 1, every: 60},
+    {n: "Nombre d'humains dans l'espace", u: '', url: 'http://api.open-notify.org/astros.json', p: 'number', id: 'astronautes', every: 21600}
+  ]}
+];
+const VILLES = [['Bordeaux', 44.84, -0.58], ['Paris', 48.86, 2.35], ['Lyon', 45.76, 4.84], ['Marseille', 43.30, 5.37], ['Toulouse', 43.60, 1.44],
+  ['Nantes', 47.22, -1.55], ['Lille', 50.63, 3.06], ['Strasbourg', 48.58, 7.75], ['Rennes', 48.11, -1.68], ['Poitiers', 46.58, 0.34],
+  ['Montpellier', 43.61, 3.88], ['Nice', 43.70, 7.27], ['Brest', 48.39, -4.49], ['La Rochelle (océan)', 46.16, -1.15], ['Lacanau (océan)', 45.00, -1.20]];
+const memo = (k, v) => { try { if (v === undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* stockage indisponible */ } return null; };
+function lieuMemo() { const l = memo('pocl_lieu'); return l && l.n ? l : {n: 'Bordeaux', lat: 44.84, lon: -0.58}; }
+function wizCat() { W = {kind: 'cat', step: 1, lieu: lieuMemo(), villes: null, editIdx: -1, fam: memo('pocl_fam') || 0, find: ''}; renderWiz(); }
+const catBack = '<button class="btn sm" onclick="readWiz();W.step=1;renderWiz()">‹ Retour au catalogue</button>';
+function wizCatHTML() {
+  if (W.step === 3) return `<h2>📚 ${esc(W.item.n)}</h2>${catBack}` + finalHTML();
+  if (W.step === 2) return `<h2>📚 ${esc(W.item.n)}</h2>${catBack}` + (W.item.pick === 'hydro' || W.item.pick === 'temp' ? catHubHTML() : catPickHTML());
+  let h = `<h2>📚 Catalogue de données prêtes</h2>
+    <label class="f">Lieu</label><div class="row"><b>📍 ${esc(W.lieu.n)}</b> <span class="mute">(${(+W.lieu.lat).toFixed(2)}, ${(+W.lieu.lon).toFixed(2)})</span></div>
+    <div class="row" style="margin-top:6px"><input data-w="q" placeholder="ville ou village…" value="${esc(W.q || '')}" onkeydown="if(event.key==='Enter')catVille()"><button class="btn" onclick="catVille()">Chercher</button>
+    <select onchange="if(this.value!==''){const v=VILLES[this.value];catLieu(v[0],v[1],v[2])}"><option value="">ou une grande ville…</option>${VILLES.map((v, i) => `<option value="${i}">${esc(v[0])}</option>`).join('')}</select></div>`;
+  if (W.villes) h += W.villes.length ? W.villes.map((v, i) => `<span class="chip" onclick="catLieu(W.villes[${i}].n,W.villes[${i}].lat,W.villes[${i}].lon)">${esc(v.n)} <span class="mute">${esc(v.d)}</span></span>`).join('') : '<div class="mute">Aucun lieu trouvé.</div>';
+  h += `<div class="row" style="margin-top:12px"><input id="catFind" placeholder="🔍 chercher une donnée (pluie, vélo, marée…)" value="${esc(W.find)}" oninput="W.find=this.value;catList()" style="flex:1"></div>
+    <div id="catFams" style="margin:8px 0">${FAM.map((f, i) => `<button class="btn sm${i === +W.fam && !W.find ? ' pri' : ''}" onclick="W.fam=${i};W.find='';memo('pocl_fam',${i});renderWiz()">${f.c}</button>`).join(' ')}</div>
+    <div id="catItems">${catItemsHTML()}</div>`;
+  return h;
+}
+function catItemsHTML() {
+  const q = String(W.find || '').trim().toLowerCase();
+  const noAcc = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const fams = q ? FAM : [FAM[+W.fam] || FAM[0]];
+  let h = '', n = 0;
+  fams.forEach(g => {
+    const ci = FAM.indexOf(g);
+    const its = g.items.map((it, ii) => [it, ii]).filter(([it]) => !q || noAcc(it.n + ' ' + g.c + ' ' + (it.tip || '')).includes(noAcc(q)));
+    if (!its.length) return;
+    h += `<h3>${g.c} <span class="mute" style="font-weight:400">— ${esc(g.d)}</span></h3><div>`;
+    its.forEach(([it, ii]) => {
+      n++;
+      const unit = it.u && it.u !== 'texte' && !/^\d/.test(it.u) ? ` <span class="mute">${esc(it.u.split(' ')[0])}</span>` : '';
+      h += `<span class="chip" title="${esc(it.tip || it.u)}" onclick="catPick(${ci},${ii})">${it.key ? '🔑 ' : ''}${esc(it.n)}${unit}</span>`;
+    });
+    h += '</div>';
+  });
+  return n ? h : '<p class="mute">Rien trouvé : essaie un autre mot.</p>';
+}
+function catList() { const el = $('#catItems'); if (el) el.innerHTML = catItemsHTML(); const f = $('#catFams'); if (f) f.style.opacity = W.find ? 0.5 : 1; }
+function catLieu(n, lat, lon) { W.lieu = {n, lat, lon}; W.villes = null; memo('pocl_lieu', W.lieu); renderWiz(); }
+async function catVille() {
+  readWiz(); if (!String(W.q || '').trim()) return;
+  W.busy = true; W.err = ''; renderWiz();
+  try {
+    const j = await getJSON('https://geocoding-api.open-meteo.com/v1/search?count=8&language=fr&countryCode=FR&name=' + E(W.q.trim()));
+    W.villes = (j.results || []).map(r => ({n: r.name, lat: r.latitude, lon: r.longitude, d: [r.admin2, r.admin1].filter(Boolean).join(', ')}));
+  } catch (e) { W.err = 'Recherche du lieu impossible : ' + e.message; }
+  W.busy = false; renderWiz();
+}
+const fill = (u, x) => u.replace(/\{(\w+)\}/g, (m, k) => (x[k] != null ? E(x[k]) : m));
+function catPick(ci, ii) {
+  readWiz();
+  const it = FAM[ci].items[ii];
+  if (it.clock) return wizLocal('clock', null, it.clock);
+  W.item = it; W.code = null; W.station = null; W.stations = null; W.key = it.key ? (memo('pocl_key_' + it.key) || '') : undefined;
+  if (it.pick === 'hydro' || it.pick === 'temp') return catStations(25);
+  if (it.pick) { W.step = 2; W.err = ''; renderWiz(); return catPickLoad(); }
+  catLoad();
+}
+
+// --- Étape 2 : choisir une station, un parking, une gare ou une académie ---
+function catPickHTML() {
+  const it = W.item;
+  let h = '';
+  if (it.key === 'sncf') {
+    h += `<div class="infobox">🔑 Les horaires de la SNCF demandent une <b>clé gratuite</b> : inscris-toi sur
+      <a href="https://numerique.sncf.com/startup/api/token-developpeur/" target="_blank" rel="noopener">numerique.sncf.com</a>, tu la reçois par e-mail.
+      Elle est gardée dans l'objet et dans ce navigateur, jamais dans les recettes exportées.</div>
+      <label class="f">Clé SNCF</label><input data-w="key" class="w" type="password" autocomplete="off" value="${esc(W.key || '')}" placeholder="ex. 3b036afe-0110-4202-b9ed-99718476c2e0">`;
+  }
+  if (it.pick === 'gare') {
+    h += `<label class="f">Gare</label><div class="row"><input data-w="gq" placeholder="nom de la gare…" value="${esc(W.gq || '')}" onkeydown="if(event.key==='Enter'){readWiz();catPickLoad()}"><button class="btn" onclick="readWiz();catPickLoad()">Chercher</button></div>
+      <p class="mute">${W.gq ? 'Gares trouvées :' : 'Gares les plus proches de <b>' + esc(W.lieu.n) + '</b> :'}</p>`;
+  } else if (it.pick === 'acad') {
+    h += '<p>Choisis ton académie (elle fixe les dates des vacances) :</p>';
+  } else if (it.pick === 'ods') {
+    h += `<p>${it.o.ville} : ${W.near ? 'les plus proches de <b>' + esc(W.lieu.n) + '</b>' : 'choisis dans la liste'} (valeur actuelle à droite) :</p>`;
+  }
+  if (W.stations && !W.stations.length) h += '<div class="warnbox">Rien trouvé.</div>';
+  (W.stations || []).forEach((s, i) => {
+    const right = s.v != null ? `<b>${esc(fmt(s.v))}</b> <span class="mute">${esc(it.u)}</span> ` : '';
+    h += `<div class="item"><span>${esc(s.l)}${s.d != null ? ` <span class="mute">· ${s.d < 1 ? '< 1' : Math.round(s.d)} km</span>` : ''}</span><span>${right}<button class="btn sm" onclick="catPickChoose(${i})">Choisir ›</button></span></div>`;
+  });
+  return h;
+}
+async function catPickLoad() {
+  const it = W.item, la = +W.lieu.lat, lo = +W.lieu.lon;
+  W.busy = true; W.err = ''; W.stations = null; renderWiz();
+  try {
+    if (it.pick === 'gare') {
+      const base = ODS('ressources.data.sncf.com', 'gares-de-voyageurs') + '?select=nom,codes_uic,position_geographique&limit=15';
+      const q = String(W.gq || '').trim().replace(/"/g, '');
+      const j = await getJSON(base + (q ? '&where=' + E('search(nom,"' + q + '")') : '&order_by=' + E(`distance(position_geographique, geom'POINT(${lo} ${la})')`)));
+      W.stations = (j.results || []).filter(r => r.codes_uic).map(r => ({c: String(r.codes_uic).split(/[;, ]/)[0], l: r.nom,
+        d: r.position_geographique ? kmBetween(la, lo, r.position_geographique.lat, r.position_geographique.lon) : null}));
+    } else if (it.pick === 'acad') {
+      const j = await getJSON(ODS('data.education.gouv.fr', 'fr-en-calendrier-scolaire') + '?select=location,zones&group_by=location,zones&limit=100');
+      W.stations = (j.results || []).filter(r => r.location).map(r => ({c: r.location, l: r.location + ' (' + r.zones + ')'}));
+    } else {
+      const o = it.o;
+      W.near = !o.city || kmBetween(la, lo, o.city[0], o.city[1]) < 60;  // sinon : autour du centre de la ville
+      const [cla, clo] = W.near || !o.city ? [la, lo] : o.city;
+      const sel = [o.idf, o.namef, o.valf].concat(o.geof ? [o.geof] : []).join(',');
+      const ord = o.geof ? E(`distance(${o.geof}, geom'POINT(${clo} ${cla})')`) : o.namef;
+      const j = await getJSON(ODS(o.host, o.ds) + '?select=' + sel + '&order_by=' + ord + '&limit=' + (o.geof ? 30 : 60));
+      W.stations = (j.results || []).filter(r => r[o.idf] != null).map(r => ({c: r[o.idf], l: r[o.namef] || String(r[o.idf]), v: r[o.valf],
+        d: o.geof && r[o.geof] ? kmBetween(la, lo, r[o.geof].lat, r[o.geof].lon) : null}));
+    }
+  } catch (e) { W.err = 'Liste indisponible : ' + e.message; }
+  W.busy = false; renderWiz();
+}
+function catPickChoose(i) {
+  readWiz();
+  const it = W.item, s = W.stations[i];
+  if (it.key) {
+    W.key = String(W.key || '').trim();
+    if (!W.key) return toast('Colle d\'abord ta clé SNCF', true);
+    memo('pocl_key_' + it.key, W.key);
+  }
+  W.code = s.c; W.station = it.pick === 'acad' ? 'académie de ' + s.c : s.l;
+  catLoad();
+}
+// Adresse de la valeur pour une station Opendatasoft choisie (id numérique ou texte)
+function odsValUrl(o, code) {
+  const w = o.idf + '=' + (typeof code === 'number' ? code : '"' + String(code).replace(/"/g, '') + '"');
+  const sel = (o.f || [[0, o.valf]]).map(x => x[1]);
+  if (!sel.includes(o.valf)) sel.unshift(o.valf);
+  return ODS(o.host, o.ds) + '?select=' + sel.join(',') + '&where=' + E(w) + '&limit=1';  // tous les champs de la station
+}
+// Valeurs « en plus » d'un élément du catalogue : les autres données de la même réponse
+function catExtras(it) {
+  const list = [], seen = new Set([W.path]);
+  const add = e => { if (!seen.has(e.p)) { seen.add(e.p); list.push(Object.assign({k: 'num', u: '', dec: 0, mul: 1}, e)); } };
+  if (it.pick === 'ods') (it.o.f || []).forEach(([n, f, u, k]) => add({n, p: 'results.0.' + f, u, k: k || 'num', id: f}));
+  else FAM.forEach(g => g.items.forEach(x => { if (x !== it && !x.clock && x.url && x.url === it.url && x.pick === it.pick) add({n: x.n, p: x.p, k: x.k, u: x.u, id: x.id, dec: x.dec, mul: x.mul}); }));
+  (it.x || []).forEach(add);
+  return list;
+}
+function exValue(e) {
+  if (!W.json) return undefined;
+  const v = getPath(W.json, e.p);
+  if (v == null) return v === null ? '–' : undefined;
+  if (e.k === 'minutes') { const t = Date.parse(navDate(v)); return isNaN(t) ? String(v) : String(+((t - Date.now()) / 60000 * (e.mul || 1)).toFixed(e.dec || 0)); }
+  if (typeof v === 'number') return String(+(v * (e.mul || 1)).toFixed(e.dec != null ? Math.max(e.dec, 0) : 3));
+  return String(v);
+}
+function catExtrasHTML() {
+  const xs = W.extras || [];
+  if (!xs.length || W.editIdx >= 0) return '';
+  const left = maxSrc() - CFG.sources.length - 1;
+  let h = `<div style="border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:12px"><b>➕ Ajouter aussi</b>
+    <div class="mute">Lues dans la même réponse : l'objet ne fait aucune connexion en plus. Chaque case cochée devient une donnée (${Math.max(0, left)} place${left > 1 ? 's' : ''} libre${left > 1 ? 's' : ''} sur ${maxSrc()}).</div>`;
+  xs.forEach((e, i) => {
+    const v = exValue(e), u = e.u && e.u !== 'texte' && e.u !== 'minutes' && !/^\d/.test(e.u) ? ' ' + e.u : e.k === 'minutes' && (e.mul || 1) === 1 ? ' min' : '';
+    h += `<label class="sw" style="display:block;margin:4px 0"><input type="checkbox" data-w="ex${i}"${W['ex' + i] ? ' checked' : ''}> ${esc(e.n)}${v !== undefined ? ` <span class="mute">: <b>${esc(v)}</b>${esc(u)}</span>` : ''}</label>`;
+  });
+  return h + '</div>';
+}
+
+// --- Stations Hub'Eau (hauteur, débit, température des rivières) ---
+async function catStations(km) {
+  W.km = km; W.step = 2; W.stations = null; W.busy = true; W.err = ''; renderWiz();
+  const temp = W.item.pick === 'temp', la = +W.lieu.lat, lo = +W.lieu.lon;
+  const base = temp ? HUB + '/v1/temperature/station' : HUB + '/v2/hydrometrie/referentiel/stations';
+  // noms des champs vérifiés sur Hub'Eau (v2 hydrométrie : *_station ; v1 température : latitude/longitude)
+  const q = `?latitude=${la.toFixed(4)}&longitude=${lo.toFixed(4)}&distance=${km}&size=50&format=json&fields=code_station,libelle_station,` + (temp ? 'longitude,latitude' : 'longitude_station,latitude_station,en_service');
+  try {
+    const j = await getJSON(base + q);
+    W.stations = (j.data || []).filter(s => s.code_station).map(s => ({
+      c: s.code_station, l: s.libelle_station || s.code_station, off: s.en_service === false,
+      d: kmBetween(la, lo, +(s.latitude_station ?? s.latitude ?? la), +(s.longitude_station ?? s.longitude ?? lo))
+    }));
+    catSortStations();
+  } catch (e) { W.err = 'Liste des stations indisponible : ' + e.message; }
+  W.busy = false; renderWiz();
+  if (NET === 'direct' && W.stations && W.stations.length) catLive(W, W.stations);
+}
+function catHubHTML() {
+  let h = `<p>Stations de mesure à moins de ${W.km} km de <b>${esc(W.lieu.n)}</b> :</p>`;
+  if (W.stations && W.stations.length && NET === 'direct') h += `<p class="mute">Valeur actuelle de chaque station : choisis-en une qui mesure en ce moment.</p>`;
+  if (W.item.id === 'hauteur') h += `<p class="mute">La hauteur est mesurée par rapport au repère de chaque station : elle peut être négative, et seules ses variations comptent.</p>`;
+  if (W.stations && !W.stations.length) h += `<div class="warnbox">Aucune station trouvée.</div>`;
+  (W.stations || []).forEach((s, i) => {
+    const dim = s.off || s.v === null || s.old;
+    h += `<div class="item"${dim ? ' style="opacity:.55"' : ''}><span><b>${esc(s.l)}</b> <span class="mute">· ${s.d < 1 ? '< 1' : Math.round(s.d)} km</span><br><span class="mute">${catStState(s)}</span></span><button class="btn sm" onclick="catStation(${i})">Choisir ›</button></div>`;
+  });
+  if (W.stations && W.km < 100) h += `<button class="btn sm" onclick="catStations(${W.km * 2})">Chercher plus loin (${W.km * 2} km)</button>`;
+  return h;
+}
+function kmBetween(a1, o1, a2, o2) {
+  const r = Math.PI / 180, x = (o2 - o1) * r * Math.cos((a1 + a2) / 2 * r), y = (a2 - a1) * r;
+  return 6371 * Math.sqrt(x * x + y * y);
+}
+// Rang d'une station : celles qui mesurent en ce moment d'abord, puis les plus proches
+const stRank = s => (s.off ? 3 : s.v === null ? 2 : s.old ? 1 : 0);
+function catSortStations() { W.stations.sort((a, b) => stRank(a) - stRank(b) || a.d - b.d); }
+function agoText(t) {
+  const m = (Date.now() - t) / 60000;
+  if (m < 90) return 'il y a ' + Math.max(1, Math.round(m)) + ' min';
+  if (m < 48 * 60) return 'il y a ' + Math.round(m / 60) + ' h';
+  if (m < 60 * 24 * 60) return 'il y a ' + Math.round(m / 1440) + ' jours';
+  return 'dernière mesure le ' + new Date(t).toLocaleDateString('fr-FR');
+}
+function catStState(s) {
+  if (s.off) return '⛔ station arrêtée';
+  if (s.v === undefined) return NET === 'direct' ? '⏳ lecture…' : '';
+  if (s.v === null) return '○ aucune mesure disponible';
+  const u = W.item.u, val = (+s.v).toLocaleString('fr-FR', {maximumFractionDigits: W.item.dec == null ? 1 : W.item.dec});
+  return (s.old ? '⚠ ' : '● ') + val + ' ' + u + ' · ' + agoText(s.t);
+}
+// Valeur actuelle de chaque station (6 requêtes à la fois, directement depuis le navigateur)
+async function catLive(w, list) {
+  const it = w.item, temp = it.pick === 'temp';
+  let k = 0;
+  const one = async s => {
+    if (s.off) return;
+    try {
+      const j = await getJSON(fill(it.url, {code: s.c}));
+      const d = (j.data || [])[0], v = getPath(j, it.p);
+      if (!d || v == null) s.v = null;
+      else {
+        s.v = +v * (it.mul || 1);
+        s.t = Date.parse(temp ? d.date_mesure_temp + 'T' + (d.heure_mesure_temp || '12:00:00') : d.date_obs);
+        s.old = isNaN(s.t) || Date.now() - s.t > (temp ? 60 : 2) * 86400000;
+      }
+    } catch (e) { s.v = null; }
+    if (W === w && W.step === 2) renderWiz();
+  };
+  await Promise.all(Array.from({length: 6}, async () => { while (k < list.length) await one(list[k++]); }));
+  if (W === w && W.step === 2) { catSortStations(); renderWiz(); }
+}
+function catStation(i) { W.code = W.stations[i].c; W.station = W.stations[i].l; catLoad(); }
+
+// --- Étape 3 : lecture de la valeur, puis réglages communs ---
+async function catLoad() {
+  const it = W.item;
+  W.url = it.pick === 'ods' ? odsValUrl(it.o, W.code) : fill(it.url, {lat: (+W.lieu.lat).toFixed(4), lon: (+W.lieu.lon).toFixed(4), code: W.code});
+  W.path = it.pick === 'ods' ? 'results.0.' + it.o.valf : it.p; W.auth = it.key ? W.key : undefined; W.json = null;
+  W.busy = true; W.err = ''; renderWiz();
+  try {
+    const j = await getJSON(W.url, W.auth);
+    W.json = j;
+    W.res = {v: getPath(j, W.path)};
+    if (W.res.v === undefined || W.res.v === null) {
+      W.res = null;
+      W.err = it.key ? "Pas de départ trouvé pour l'instant (fin de service ?). Tu peux quand même l'enregistrer." : "Pas de valeur pour l'instant à cet endroit (station à l'arrêt, lieu hors zone, lieu pas sur la côte…). Tu peux quand même l'enregistrer ou choisir un autre lieu.";
+    }
+  } catch (e) {
+    W.res = null;
+    W.err = 'Lecture impossible : ' + e.message + (it.key && /401|403|token|Token/.test(e.message) ? ' — vérifie la clé SNCF.' : '');
+  }
+  const where = W.station || (it.url && it.url.indexOf('{lat}') >= 0 ? W.lieu.n : '');
+  W.id = uniqueId(it.id, -1);
+  W.label = it.n + (where ? ' — ' + where : '') + (it.u && it.u !== 'texte' && it.u !== 'minutes' && !/^\d/.test(it.u) ? ' (' + it.u + ')' : '');
+  W.k = it.k || 'num'; W.every = it.every || 900; W.dec = it.dec || 0; W.mul = it.mul || 1; W.tmap = '';
+  W.where = where; W.extras = catExtras(it); W.extras.forEach((e, i) => { W['ex' + i] = false; });
+  W.step = 3; W.busy = false; renderWiz();
+}
+
+// --- Étape finale commune (nom, fréquence…) ---
+const MUL_T = [[1, 'minutes'], [1 / 60, 'heures'], [1 / 1440, 'jours']];
+// Date de Navitia (20261119T160500, heure locale) -> format ISO lisible par le navigateur
+const navDate = v => (/^\d{8}T\d{6}$/.test(String(v)) ? String(v).replace(/^(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)$/, '$1-$2-$3T$4:$5:$6') : String(v));
+function finalHTML() {
+  let v = W.res ? W.res.v : undefined;
+  const mul = num(W.mul, 1);
+  if (W.k === 'minutes' && v != null && !isNaN(Date.parse(navDate(v)))) v = +((Date.parse(navDate(v)) - Date.now()) / 60000 * mul).toFixed(W.dec ? +W.dec : 0);
+  else if (W.k !== 'minutes' && mul !== 1 && v != null && v !== '' && !isNaN(+v)) v = +(v * mul).toFixed(6);
+  let h = '';
+  if (W.res) h += `<div class="okbox">Valeur obtenue maintenant : <div class="big">${esc(fmt(v))}</div>${W.res.total != null ? `<div class="mute">${W.res.total} ligne(s) correspondent à la demande${W.res.total > 1 && W.kind === 'ods' && W.mode === 'value' ? ' : on garde la première (selon le tri choisi)' : ''}.</div>` : ''}</div>`;
+  else h += '<div class="infobox">Clique « Tester sur l\'objet » pour vérifier la valeur.</div>';
+  if (W.res && v === null) h += '<div class="warnbox">La valeur est vide : vérifie le filtre (aucune ligne ne correspond ?).</div>';
+  const ev = [[30, '30 s'], [60, '1 min'], [120, '2 min'], [300, '5 min'], [600, '10 min'], [900, '15 min'], [1800, '30 min'], [3600, '1 h'], [21600, '6 h'], [86400, '24 h']];
+  h += `<details><summary>Adresse utilisée par l'objet</summary><code>${esc(W.url)}</code><br>chemin : <code>${esc(W.path || '(racine)')}</code></details>
+    <div class="row"><button class="btn" onclick="wizTry()">📡 Tester sur l'objet</button><span id="wTry" class="mute"></span></div>
+    <div class="row top"><div><label class="f">Nom court</label><input data-w="id" value="${esc(W.id || '')}" style="width:160px"><div class="mute">sans espace ni accent : velos, temp…</div></div>
+    <div style="flex:1;min-width:220px"><label class="f">Description</label><input data-w="label" class="w" value="${esc(W.label || '')}"></div></div>
+    <div class="row top"><div><label class="f">Type de valeur</label><select data-w="k" onchange="readWiz();renderWiz()">
+      <option value="num"${W.k === 'num' ? ' selected' : ''}>nombre</option><option value="text"${W.k === 'text' ? ' selected' : ''}>texte (pour l'écran)</option>
+      <option value="minutes"${W.k === 'minutes' ? ' selected' : ''}>date → minutes restantes</option></select></div>
+    <div><label class="f">Mise à jour toutes les</label><select data-w="every">${ev.map(e => `<option value="${e[0]}"${+W.every === e[0] ? ' selected' : ''}>${e[1]}</option>`).join('')}</select></div>
+    <div><label class="f">Décimales</label><select data-w="dec">${[0, 1, 2, 3].map(d => `<option${+W.dec === d ? ' selected' : ''}>${d}</option>`).join('')}</select></div>
+    ${W.k === 'minutes' ? `<div><label class="f">Compter en</label><select data-w="mul" onchange="readWiz();renderWiz()">${MUL_T.map(m => `<option value="${m[0]}"${Math.abs(num(W.mul, 1) - m[0]) < 1e-9 ? ' selected' : ''}>${m[1]}</option>`).join('')}</select></div>`
+      : `<div><label class="f">Multiplier par</label><input type="number" step="any" data-w="mul" value="${esc(W.mul == null ? 1 : W.mul)}" style="width:100px" onchange="readWiz();renderWiz()"></div>`}</div>
+    ${W.k === 'minutes' ? '' : '<div class="mute">Multiplier sert à changer d\'unité : 0.001 pour passer des mm aux m, 3.6 des m/s aux km/h…</div>'}`;
+  if (W.k === 'minutes') h += '<div class="infobox">La date est transformée en compte à rebours : positif = dans le futur, négatif = déjà passé.</div>';
+  if (W.auth !== undefined || W.kind === 'json') h += `<details${W.auth ? ' open' : ''}><summary>Clé d'accès (facultatif)</summary><input data-w="auth" class="w" type="password" autocomplete="off" value="${esc(W.auth || '')}" placeholder="envoyée dans l'en-tête Authorization">
+    <div class="mute">Pour les services qui demandent une clé (SNCF…). Elle reste dans l'objet : les recettes exportées ne la contiennent pas.</div></details>`;
+  if (W.k !== 'minutes') h += `<details${W.tmap ? ' open' : ''}><summary>Transformer un texte en nombre (facultatif)</summary><input data-w="tmap" class="w" value="${esc(W.tmap || '')}" placeholder="OUVERT=1;FERME=0;*=-1">
+    <div class="mute">Utile pour piloter une sortie avec un texte. « * » = toutes les autres valeurs.</div></details>`;
+  if (W.kind === 'cat') h += catExtrasHTML();
+  h += `<div class="row" style="margin-top:14px"><button class="btn pri" onclick="wizSave()">💾 Enregistrer${W.kind === 'cat' && (W.extras || []).length && W.editIdx < 0 ? ' (avec les cases cochées)' : ' la donnée'}</button></div>`;
+  return h;
+}
+async function wizTry() {
+  readWiz();
+  const el = $('#wTry'); el.textContent = "⏳ l'objet interroge le serveur…";
+  try {
+    const r = await postJ('/api/try', {url: W.url, path: W.path, kind: W.k, tmap: W.tmap || '', mul: num(W.mul, 1), auth: W.auth || ''});
+    el.innerHTML = `<span class="okc">✔ l'objet lit <b>${esc(W.k === 'text' ? r.text : fmt(r.num != null ? r.num : r.text))}</b></span> (${r.ms} ms)`;
+  } catch (e) { el.innerHTML = '<span class="err">✖ ' + esc(e.message) + '</span>'; }
+}
+async function wizSave() {
+  readWiz();
+  const id = slug(W.id);
+  if (!id) return toast('Donne un nom court à la donnée', true);
+  if (CFG.sources.some((s, i) => s.id === id && i !== W.editIdx)) return toast('Ce nom est déjà utilisé', true);
+  const s = {id, type: 'url', label: W.label || '', url: W.url, path: W.path || '', kind: W.k || 'num', every: +W.every || 300, dec: +W.dec || 0};
+  if (W.tmap && W.k !== 'minutes') s.tmap = W.tmap;
+  if (num(W.mul, 1) !== 1) s.mul = num(W.mul, 1);
+  if (W.auth) s.auth = String(W.auth).trim();
+  if (W.kind === 'ods') s.ods = {portal: W.portal, ds: W.ds, title: W.title, mode: W.mode, field: W.field, ff: W.ff, fv: W.fv, order: W.order, where: W.where};
+  const more = [];
+  if (W.kind === 'cat' && W.editIdx < 0) (W.extras || []).forEach((e, i) => {
+    if (!W['ex' + i]) return;
+    let xid = slug(e.id) || 'donnee', n = 2; const b = xid;
+    while (CFG.sources.some(x => x.id === xid) || xid === s.id || more.some(x => x.id === xid)) xid = b + n++;
+    const unit = e.u && e.u !== 'texte' && e.u !== 'minutes' && !/^\d/.test(e.u) ? ' (' + e.u + ')' : '';
+    const m = {id: xid, type: 'url', label: e.n + (W.where ? ' — ' + W.where : '') + unit, url: W.url, path: e.p, kind: e.k || 'num', every: s.every, dec: e.dec || 0};
+    if ((e.mul || 1) !== 1) m.mul = e.mul;
+    if (s.auth) m.auth = s.auth;
+    more.push(m);
+  });
+  if (W.editIdx < 0 && CFG.sources.length + 1 + more.length > maxSrc()) return toast(maxSrc() + ' données au maximum : décoche ' + (CFG.sources.length + 1 + more.length - maxSrc()) + ' case(s)', true);
+  putSource(s, more);
+}
+function putSource(s, more) {
+  if (W.editIdx >= 0) {
+    const old = CFG.sources[W.editIdx].id;
+    CFG.sources[W.editIdx] = s;
+    if (old !== s.id) renameRefs(old, s.id);
+  } else CFG.sources.push(s);
+  (more || []).forEach(m => CFG.sources.push(m));
+  closeModal();
+  saveCfg().then(render);
+}
+function renameRefs(a, b) {
+  CFG.outputs.forEach(o => {
+    if (o.src === a) o.src = b;
+    if (isScreen(o.type) && o.opt.pages) o.opt.pages = o.opt.pages.map(p => p.split('{' + a + '}').join('{' + b + '}').replace(new RegExp('^=' + a + '(\\s|$)', 'gm'), '=' + b + '$1'));
+  });
+}
+
+// --- Sources locales ---
+function wizLocal(type, idx, what) {
+  const s = idx != null ? CFG.sources[idx] : null;
+  const c = type === 'clock' ? (CLOCK.find(x => x[0] === (s ? s.what : what)) || CLOCK[0]) : null;
+  const base = type === 'analog' ? 'pot' : type === 'clock' ? c[0] : 'reglage';
+  const lab = type === 'analog' ? 'Potentiomètre (' + B.analog + ')' : type === 'clock' ? c[1] : 'Valeur réglée à la main';
+  W = {kind: 'local', type, editIdx: idx != null ? idx : -1, id: s ? s.id : uniqueId(base), label: s ? s.label : lab, value: s ? s.value : 50, dec: s ? s.dec : 0,
+    what: c ? c[0] : '', k: s && s.kind ? s.kind : 'num'};
+  if ($('#modal').classList.contains('hidden')) openModal('');
+  renderWiz();
+}
+function wizLocalHTML() {
+  if (W.type === 'clock') {
+    const c = CLOCK.find(x => x[0] === W.what) || CLOCK[0];
+    return `<h2>🕒 Horloge, calendrier et lune</h2>
+      <div class="infobox">Calculé par l'objet à partir de l'heure d'Internet (heure de Paris) : rien à télécharger, mise à jour chaque seconde.</div>
+      <label class="f">Ce que l'objet calcule</label><select data-w="what" class="w" onchange="readWiz();const c=CLOCK.find(x=>x[0]===W.what);W.label=c[1];W.id=uniqueId(c[0],W.editIdx);renderWiz()">${CLOCK.map(x => `<option value="${x[0]}"${x[0] === c[0] ? ' selected' : ''}>${esc(x[1])}</option>`).join('')}</select>
+      <div class="row top"><div><label class="f">Nom court</label><input data-w="id" value="${esc(W.id)}" style="width:160px"></div>
+      <div style="flex:1"><label class="f">Description</label><input data-w="label" class="w" value="${esc(W.label)}"></div>
+      <div><label class="f">Valeur</label><select data-w="k"><option value="num"${W.k !== 'text' ? ' selected' : ''}>nombre (de ${c[2]} à ${c[3]})</option>${c[4] ? `<option value="text"${W.k === 'text' ? ' selected' : ''}>texte (« ${esc(c[4])} »)</option>` : ''}</select></div>
+      <div><label class="f">Décimales</label><select data-w="dec">${[0, 1, 2].map(d => `<option${+W.dec === d ? ' selected' : ''}>${d}</option>`).join('')}</select></div></div>
+      <div class="row" style="margin-top:14px"><button class="btn pri" onclick="localSave()">💾 Enregistrer</button></div>`;
+  }
+  return `<h2>${W.type === 'analog' ? '🎛️ Potentiomètre / capteur sur ' + B.analog : '✋ Valeur réglée à la main'}</h2>
+    ${W.type === 'analog' ? '<div class="infobox">Branche un potentiomètre : une patte sur 3V3, celle du milieu sur ' + B.analog + ', la dernière sur GND. La valeur va de 0 à 1023. Marche aussi avec une photorésistance (diviseur de tension).</div>' : '<div class="infobox">Cette valeur se règle depuis le tableau de bord (bouton 🧪). Pratique pour tester les sorties sans Internet.</div>'}
+    <div class="row top"><div><label class="f">Nom court</label><input data-w="id" value="${esc(W.id)}" style="width:160px"></div>
+    <div style="flex:1"><label class="f">Description</label><input data-w="label" class="w" value="${esc(W.label)}"></div>
+    ${W.type === 'manual' ? `<div><label class="f">Valeur de départ</label><input type="number" step="any" data-w="value" value="${esc(W.value)}"></div>` : ''}
+    <div><label class="f">Décimales</label><select data-w="dec">${[0, 1, 2].map(d => `<option${+W.dec === d ? ' selected' : ''}>${d}</option>`).join('')}</select></div></div>
+    <div class="row" style="margin-top:14px"><button class="btn pri" onclick="localSave()">💾 Enregistrer</button></div>`;
+}
+function localSave() {
+  readWiz();
+  const id = slug(W.id);
+  if (!id) return toast('Donne un nom court', true);
+  if (CFG.sources.some((s, i) => s.id === id && i !== W.editIdx)) return toast('Ce nom est déjà utilisé', true);
+  const s = {id, type: W.type, label: W.label, dec: +W.dec || 0};
+  if (W.type === 'manual') s.value = num(W.value, 0);
+  if (W.type === 'clock') { s.what = W.what; s.kind = W.k === 'text' ? 'text' : 'num'; }
+  putSource(s);
+}
+
+// =====================================================================
+//  Sorties
+// =====================================================================
+VIEWS.outs = () => {
+  if (ED) return outEditor();
+  let h = `<div class="card"><div class="row between"><h2>⚙️ Sorties</h2><button class="btn pri" onclick="addOutput()">➕ Ajouter une sortie</button></div>
+    <p class="mute">Une sortie = un composant branché sur la carte. Chacune suit une donnée selon un réglage que tu choisis.</p>`;
+  if (!CFG.outputs.length) h += '<p>Aucune sortie pour l\'instant.</p>';
+  CFG.outputs.forEach((o, i) => {
+    const T = TYPES[o.type];
+    h += `<div class="item"><div>${T.ic} <b>${esc(o.name || T.l)}</b> <span class="mute">${esc(T.l)}</span>
+      <div class="mute">${isScreen(o.type) ? (o.opt.pages || []).length + ' page(s)' : (o.src === '*' ? '← toutes les données' : o.src ? '← ' + esc(o.src) : '⚠ aucune donnée choisie')} · ${o.type === 'mqtt' ? '→ ' + esc(o.opt.host) : (o.pins || []).filter(Boolean).join(', ') || '⚠ broche à choisir'}</div>
+      <div data-live="ov:${i}"></div></div>
+      <div class="row"><button class="btn sm" onclick="editOutput(${i})">✏️ Régler</button><button class="btn sm bad" onclick="delOutput(${i})">🗑️</button></div></div>`;
+  });
+  return h + '</div>';
+};
+function addOutput() {
+  if (CFG.outputs.length >= 8) return toast('8 sorties au maximum', true);
+  openModal('<h2>Quel composant veux-tu brancher ?</h2><div class="types">' + Object.keys(TYPES).map(k => {
+    const T = TYPES[k], dis = T.screen ? CFG.outputs.some(o => isScreen(o.type)) : T.single && CFG.outputs.some(o => o.type === k);
+    return `<div class="type" style="${dis ? 'opacity:.4;pointer-events:none' : ''}" onclick="newOutput('${k}')"><div class="ic">${T.ic}</div><b>${esc(T.l)}</b><div class="mute">${esc(T.d)}</div>${dis ? `<div class="tag">${T.screen ? 'un seul écran par objet' : 'déjà présent'}</div>` : ''}</div>`;
+  }).join('') + '</div>');
+}
+function newOutput(type) {
+  closeModal();
+  const T = TYPES[type], o = Object.assign({type, name: '', src: CFG.sources.length ? CFG.sources[0].id : '', pins: []}, T.def());
+  if (isScreen(type)) o.src = '';
+  if (!o.pins.length) {
+    // une broche conseillée par rôle ; si elle est prise, une broche libre qui n'est conseillée pour aucun autre rôle
+    const rec = B.rec[type] || [], taken = [], multi = T.roles.length > 1;
+    const libres = B.pins.filter(x => !B.avoid.includes(x) && !B.inOnly.includes(x)), secours = B.avoid.filter(x => !['RX', 'TX'].includes(x) && !B.inOnly.includes(x));
+    T.roles.forEach((r, k) => {
+      let p = '';
+      if (!r.opt) {
+        const pref = multi ? rec[k] : '';
+        p = pref && !taken.includes(pref) && !pinUsers(pref).length ? pref
+          : firstFree(multi ? libres.filter(x => !rec.includes(x)).concat(rec, secours) : rec.concat(libres, secours), taken);
+      }
+      taken.push(p); o.pins.push(p);
+    });
+  }
+  ED = {idx: -1, o, tried: -1, pg: 0};
+  TAB = 'outs'; render(); window.scrollTo(0, 0);
+}
+function editOutput(i) { ED = {idx: i, o: clone(CFG.outputs[i]), tried: -1, pg: 0}; render(); window.scrollTo(0, 0); }
+async function delOutput(i) {
+  const o = CFG.outputs[i];
+  if (!confirm('Supprimer « ' + (o.name || TYPES[o.type].l) + ' » ?')) return;
+  CFG.outputs.splice(i, 1);
+  CFG.buttons.forEach(b => { if (b.target === i) b.target = -1; else if (b.target > i) b.target--; });
+  await saveCfg(); render();
+}
+function srcOptions(cur, all) {
+  return '<option value="">— aucune —</option>' + (all ? `<option value="*"${cur === '*' ? ' selected' : ''}>★ toutes les données</option>` : '') + CFG.sources.map(s => `<option value="${esc(s.id)}"${s.id === cur ? ' selected' : ''}>${esc(s.id)}${s.label ? ' — ' + esc(cut(s.label, 50)) : ''}</option>`).join('');
+}
+function outUnit(o) { return o.type.startsWith('step') && o.opt.mode === 'speed' ? 'tr/min' : TYPES[o.type].u; }
+function outYLab(o) {
+  if (o.type.startsWith('step') && o.opt.mode === 'speed') return 'la vitesse (tr/min)';
+  if (o.type === 'neopixel') return {gauge: 'la part du ruban allumée (%)', color: 'la position dans le dégradé (%)', dot: 'la position du point (%)'}[o.opt.mode];
+  return TYPES[o.type].ylab;
+}
+function outEditor() {
+  const o = ED.o, T = TYPES[o.type];
+  let h = `<div class="card"><div class="row between"><h2>${T.ic} ${esc(T.l)}</h2><button class="btn sm" onclick="edCancel()">✖ Fermer</button></div>
+    <div class="row top"><div style="flex:1;min-width:200px"><label class="f">Nom</label><input class="w" id="eName" value="${esc(o.name)}" placeholder="ex : Aiguille des vélos"></div>
+    ${isScreen(o.type) ? '' : `<div style="flex:1;min-width:220px"><label class="f">Donnée qui la pilote</label><select id="eSrc" class="w">${srcOptions(o.src, T.wifi)}</select><div class="mute" id="eSrcV" data-live="srcval:${esc(o.src)}"></div></div>`}</div>
+    ${!CFG.sources.length && !isScreen(o.type) ? '<div class="warnbox">Ajoute d\'abord une donnée (onglet 📊 Données).</div>' : ''}</div>`;
+  if (!T.roles.length) h += `<div class="card"><h2>📶 Pas de fil à brancher</h2><p class="mute">Les données partent par le WiFi vers le serveur MQTT : l'objet doit être connecté à Internet (ou au réseau du serveur).</p></div>`;
+  else h += `<div class="card"><h2>🔌 Branchement</h2><div class="row top">` + T.roles.map((r, k) => `<div><label class="f">${esc(r.n)}${r.opt ? ' (facultatif)' : ''}</label>${pinSelect('ePin' + k, (o.pins || [])[k], o.type, r.opt, {out: ED.idx})}</div>`).join('') +
+    `</div><p class="mute">★ = broche conseillée. Passe la souris sur une broche du schéma pour plus d'infos.</p><div id="ePinMsg"></div><div class="svgbox wide" id="eWire"></div>${T.note ? `<div class="warnbox">⚡ ${esc(T.note)}</div>` : ''}</div>`;
+  if (T.onoff) h += condEditor(o);
+  else if (o.type === 'mqtt') h += mqttEditor(o);
+  else if (isScreen(o.type)) h += oledEditor(o);
+  else h += mapEditor(o);
+  h += optEditor(o) + testEditor(o);
+  h += `<div class="row sticky"><button class="btn pri" onclick="edSave()">💾 Enregistrer</button><button class="btn" onclick="edTry()">▶ Essayer sur l'objet</button><button class="btn" onclick="edCancel()">Annuler</button></div>`;
+  return h;
+}
+VIEWS.outs.after = () => {
+  if (!ED) return;
+  $('#main').oninput = edRead; $('#main').onchange = edRead;
+  edRefresh();
+};
+function condEditor(o) {
+  return `<div class="card"><h2>🎚️ Quand s'active-t-il ?</h2>
+    <div class="row">Quand <b>${esc(o.src || 'la donnée')}</b>
+    <select id="eCond">${[['>', 'est plus grande que'], ['<', 'est plus petite que'], ['>=', 'est au moins'], ['<=', 'est au plus'], ['=', 'vaut'], ['!=', 'est différente de']].map(c => `<option value="${esc(c[0])}"${o.cond === c[0] ? ' selected' : ''}>${c[1]}</option>`).join('')}</select>
+    <input id="eThr" value="${esc(o.thr)}" style="width:130px" placeholder="10 ou OUVERT"></div>
+    <div class="row top"><div><label class="f">Marge anti-clignotement</label><input type="number" step="any" id="eHyst" value="${esc(o.hyst || 0)}"></div>
+    <div class="mute" style="flex:1;margin-top:34px">Ex. : seuil 10 et marge 1 → s'active au-dessus de 10, ne s'arrête que sous 9.</div></div>
+    <label class="sw"><input type="checkbox" id="eInv"${o.inv ? ' checked' : ''}> Inverser (actif quand la condition est fausse)</label>
+    <div class="infobox" data-live="econd"></div></div>`;
+}
+function condNow() {
+  if (!ED || !TYPES[ED.o.type].onoff) return '';
+  const o = ED.o, s = srcLive(o.src);
+  if (!s) return 'Pas encore de valeur pour cette donnée.';
+  const isNum = o.thr !== '' && !isNaN(+String(o.thr).replace(',', '.'));
+  let r;
+  if (!isNum) { const eq = String(s.raw != null ? s.raw : s.txt).trim().toLowerCase() === String(o.thr).trim().toLowerCase(); r = o.cond === '!=' ? !eq : eq; }
+  else {
+    const x = s.v, t = num(o.thr, 0);
+    if (x == null) return 'La valeur actuelle n\'est pas un nombre.';
+    r = {'>': x > t, '<': x < t, '>=': x >= t, '<=': x <= t, '=': Math.abs(x - t) < 1e-3, '!=': Math.abs(x - t) >= 1e-3}[o.cond];
+  }
+  if (o.inv) r = !r;
+  return `Valeur actuelle <b>${esc(s.txt)}</b> → ${r ? '<b class="okc">ACTIVÉ</b>' : '<b>au repos</b>'}`;
+}
+function mapEditor(o) {
+  const pts = o.map.pts;
+  let h = `<div class="card"><h2>🎚️ Réglage : donnée → ${esc(outYLab(o))}</h2>
+    <p class="mute">Chaque ligne associe une valeur de la donnée à une position de la sortie. Entre deux points, la sortie varie progressivement${o.map.steps ? '' : ' (ou par paliers si tu coches la case)'}. En dehors, elle reste au premier ou au dernier point.</p>
+    <div class="row top"><table class="pts"><tr><th>si <b>${esc(o.src || 'la donnée')}</b> vaut</th><th>alors ${esc(outYLab(o))}</th><th></th></tr>`;
+  pts.forEach((p, k) => {
+    h += `<tr><td><input type="number" step="any" id="eX${k}" value="${p[0]}"></td><td><input type="number" step="any" id="eY${k}" value="${p[1]}"></td>
+      <td>${pts.length > 2 ? `<button class="btn sm" onclick="ptDel(${k})" title="supprimer">✖</button>` : ''}</td></tr>`;
+  });
+  h += `</table><div class="svgbox" id="eChart" style="flex:1;min-width:280px;max-width:420px" data-live="emap"></div></div>
+    <div class="row">${pts.length < 6 ? '<button class="btn sm" onclick="ptAdd()">＋ point</button>' : ''}<button class="btn sm" onclick="ptInvert()">⇅ Inverser le sens</button>
+    <button class="btn sm" onclick="ptFit()">↔ Adapter à la valeur actuelle</button><label class="sw"><input type="checkbox" id="eSteps"${o.map.steps ? ' checked' : ''}> Par paliers (seuils)</label></div>
+    <label class="f">Transition douce : <span id="eSmV">${o.smooth}</span> s</label><input type="range" id="eSmooth" min="0" max="10" step="0.1" value="${o.smooth}">
+    <span class="mute">0 = immédiat, plus grand = mouvement plus lent et fluide</span></div>`;
+  return h;
+}
+function mapJS(o, x) {
+  const p = o.map.pts.slice().sort((a, b) => a[0] - b[0]);
+  if (x <= p[0][0]) return p[0][1];
+  if (x >= p[p.length - 1][0]) return p[p.length - 1][1];
+  for (let i = 0; i + 1 < p.length; i++) if (x < p[i + 1][0]) {
+    if (o.map.steps) return p[i][1];
+    const dx = p[i + 1][0] - p[i][0];
+    return dx <= 0 ? p[i + 1][1] : p[i][1] + (p[i + 1][1] - p[i][1]) * (x - p[i][0]) / dx;
+  }
+  return p[p.length - 1][1];
+}
+function drawChart() {
+  const el = $('#eChart'); if (!el || !ED || !ED.o.map) return;
+  const o = ED.o, p = o.map.pts.slice().sort((a, b) => a[0] - b[0]);
+  const Wd = 400, H = 210, l = 46, r = 14, t = 14, b = 34;
+  let x0 = p[0][0], x1 = p[p.length - 1][0]; if (x1 === x0) x1 = x0 + 1;
+  const pad = (x1 - x0) * 0.12; x0 -= pad; x1 += pad;
+  const ys = p.map(q => q[1]); let y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+  if (y1 === y0) { y0 -= 1; y1 += 1; }
+  const X = v => l + (v - x0) / (x1 - x0) * (Wd - l - r), Y = v => H - b - (v - y0) / (y1 - y0) * (H - t - b);
+  let d = `M${X(x0)},${Y(p[0][1])} L${X(p[0][0])},${Y(p[0][1])}`;
+  for (let i = 1; i < p.length; i++) d += o.map.steps ? ` L${X(p[i][0])},${Y(p[i - 1][1])} L${X(p[i][0])},${Y(p[i][1])}` : ` L${X(p[i][0])},${Y(p[i][1])}`;
+  d += ` L${X(x1)},${Y(p[p.length - 1][1])}`;
+  let s = `<svg viewBox="0 0 ${Wd} ${H}" font-size="11"><rect x="${l}" y="${t}" width="${Wd - l - r}" height="${H - t - b}" fill="#f8fafc" stroke="#e2e8f0"/>`;
+  for (let k = 0; k <= 4; k++) {
+    const xv = x0 + (x1 - x0) * k / 4, yv = y0 + (y1 - y0) * k / 4;
+    s += `<text x="${X(xv)}" y="${H - b + 14}" text-anchor="middle" fill="#64748b">${+xv.toFixed(2)}</text><text x="${l - 5}" y="${Y(yv) + 4}" text-anchor="end" fill="#64748b">${+yv.toFixed(1)}</text>`;
+  }
+  s += `<text x="${(Wd + l) / 2}" y="${H - 4}" text-anchor="middle" fill="#334155">${esc(o.src || 'donnée')}</text>`;
+  s += `<path d="${d}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linejoin="round"/>`;
+  p.forEach(q => { s += `<circle cx="${X(q[0])}" cy="${Y(q[1])}" r="5" fill="#fff" stroke="#2563eb" stroke-width="2"/>`; });
+  const tv = ED.testV != null ? ED.testV : null, live = srcLive(o.src), xv = tv != null ? tv : live && live.v != null ? live.v : null;
+  if (xv != null) {
+    const xc = Math.max(x0, Math.min(x1, xv)), yv = mapJS(o, xv);
+    s += `<line x1="${X(xc)}" x2="${X(xc)}" y1="${t}" y2="${H - b}" stroke="#ef4444" stroke-dasharray="4 3"/><circle cx="${X(xc)}" cy="${Y(yv)}" r="6" fill="#ef4444"/>
+      <text x="${Math.min(X(xc) + 8, Wd - 120)}" y="${t + 14}" fill="#ef4444" font-weight="700">${tv != null ? 'essai' : 'maintenant'} : ${+(+xv).toFixed(2)} → ${+yv.toFixed(1)} ${esc(outUnit(o))}</text>`;
+  }
+  el.innerHTML = s + '</svg>';
+}
+function ptAdd() { const p = ED.o.map.pts; const a = p[p.length - 2], b = p[p.length - 1]; p.push([b[0] + (b[0] - a[0] || 10), b[1]]); render(); }
+function ptDel(k) { ED.o.map.pts.splice(k, 1); render(); }
+function ptInvert() { const p = ED.o.map.pts, ys = p.map(q => q[1]).reverse(); p.forEach((q, k) => { q[1] = ys[k]; }); render(); }
+function ptFit() {
+  const s = srcLive(ED.o.src);
+  if (!s || s.v == null) return toast('Pas encore de valeur pour cette donnée', true);
+  const v = Math.abs(s.v), m = Math.pow(10, Math.floor(Math.log10(Math.max(v * 2, 1))));
+  const hi = [1, 2, 5, 10].map(k => k * m).find(k => k >= v * 2) || 10 * m;
+  const p = ED.o.map.pts, lo0 = p[0][0], hi0 = p[p.length - 1][0], lo = Math.min(0, s.v);
+  p.forEach(q => { q[0] = +(lo + (q[0] - lo0) / ((hi0 - lo0) || 1) * (hi - lo)).toFixed(3); });
+  render(); toast('Plage ajustée : de ' + lo + ' à ' + hi);
+}
+function mqttEditor(o) {
+  const op = o.opt, host = hostOf(SYS && SYS.name), ex = op.topic.split('{nom}').join(host).split('{id}').join(o.src && o.src !== '*' ? o.src : (CFG.sources[0] || {id: 'temp'}).id);
+  return `<div class="card"><h2>📡 Serveur MQTT</h2>
+    <div class="row top"><div style="flex:1;min-width:200px"><label class="f">Serveur (broker)</label><input class="w" id="mHost" value="${esc(op.host)}" list="mHosts" placeholder="adresse ou nom">
+    <datalist id="mHosts">${PUBLIC_BROKERS.map(b => `<option value="${b}">`).join('')}<option value="homeassistant.local"></datalist></div>
+    <div><label class="f">Port</label><input type="number" id="mPort" value="${esc(op.port)}"></div>
+    <div><label class="f">Utilisateur</label><input id="mUser" value="${esc(op.user)}" autocomplete="off" style="width:140px"></div>
+    <div><label class="f">Mot de passe</label><input type="password" id="mPass" value="${esc(op.pass)}" autocomplete="new-password" style="width:140px"></div></div>
+    <label class="f">Sujet (topic)</label><input class="w" id="mTopic" value="${esc(op.topic)}">
+    <div class="mute">{nom} = nom de l'objet (<code>${esc(host)}</code>), {id} = nom court de la donnée. Exemple : <code>${esc(ex)}</code></div>
+    <div class="row top"><div><label class="f">Envoyer</label><select id="mMode"><option value="change"${op.mode !== 'periodic' ? ' selected' : ''}>quand la valeur change</option><option value="periodic"${op.mode === 'periodic' ? ' selected' : ''}>régulièrement</option></select></div>
+    <div><label class="f">Intervalle (s)</label><input type="number" id="mEvery" min="1" value="${esc(op.every)}"></div>
+    <div class="mute" style="flex:1;margin-top:34px">« quand la valeur change » : au plus une fois par intervalle.</div></div>
+    <label class="sw"><input type="checkbox" id="mRetain"${op.retain ? ' checked' : ''}> Message retenu : le serveur garde la dernière valeur pour les nouveaux abonnés</label>
+    <label class="sw"><input type="checkbox" id="mJson"${op.json ? ' checked' : ''}> Format JSON <code>{"objet", "id", "valeur", "texte", "heure"}</code> au lieu de la valeur seule</label>
+    <div class="infobox" data-live="emq"></div>
+    ${PUBLIC_BROKERS.includes(String(op.host).trim()) ? '<div class="warnbox">⚠ Serveur public gratuit : pratique pour essayer, mais tout le monde peut lire (et écrire) ces messages. Pas de données personnelles !</div>' : ''}
+    <details><summary>Comment voir les messages ?</summary><p class="mute">Avec l'application gratuite <b>MQTT Explorer</b> (se connecter au même serveur), ou dans un terminal :<br>
+    <code>mosquitto_sub -h ${esc(op.host)} -p ${esc(op.port)} -t '${esc(op.topic.split('{nom}').join(host).split('{id}').join('#'))}' -v</code></p></details></div>`;
+}
+function optEditor(o) {
+  if (o.type === 'mqtt') return '';
+  const op = o.opt || {}, ck = (id, v, l) => `<label class="sw"><input type="checkbox" id="${id}"${v ? ' checked' : ''}> ${l}</label>`;
+  let h = '<div class="card"><h2>🛠️ Options</h2><div class="row top">';
+  if (o.type === 'servo') h += `<div><label class="f">Impulsion à 0° (µs)</label><input type="number" id="oPmin" value="${op.pmin}"></div><div><label class="f">Impulsion à 180° (µs)</label><input type="number" id="oPmax" value="${op.pmax}"></div></div>
+    <p class="mute">Si le servo force ou grogne en bout de course, rapproche ces deux valeurs (ex. 600 et 2300). Pour calibrer finement, utilise le curseur d'essai.</p>${ck('oRel', op.rel, 'Relâcher le servo à l\'arrêt (silencieux, mais il ne tient plus sa position)')}`;
+  else if (o.type === 'stepper' || o.type === 'stepdir') h += `<div><label class="f">Mode</label><select id="oMode"><option value="pos"${op.mode !== 'speed' ? ' selected' : ''}>position (angle en °)</option><option value="speed"${op.mode === 'speed' ? ' selected' : ''}>rotation continue (tr/min)</option></select></div>
+    <div><label class="f">Pas par tour</label><input type="number" id="oSpr" value="${op.spr}"></div><div><label class="f">Vitesse max (pas/s)</label><input type="number" id="oSpeed" value="${op.speed}"></div></div>
+    <p class="mute">${o.type === 'stepper' ? '28BYJ-48 : 4096 pas par tour (demi-pas), vitesse max ≈ 1000 pas/s (≈ 15 tr/min).' : 'NEMA 17 : 200 pas par tour × micro-pas réglés sur le driver (×16 = 3200).'} Au démarrage, la position actuelle est prise comme 0°.</p>${ck('oRev', op.rev, 'Inverser le sens de rotation')}`;
+  else if (o.type === 'relay') h += `</div>${ck('oLow', op.low, 'Mon module relais s\'active avec un niveau BAS (si le relais est allumé quand il devrait être éteint, coche cette case)')}`;
+  else if (o.type === 'neopixel') h += `<div><label class="f">Nombre de LED</label><input type="number" id="oN" min="1" max="300" value="${op.n}"></div>
+    <div><label class="f">Luminosité : <span id="oBriV">${op.bri}</span></label><input type="range" id="oBri" min="1" max="255" value="${op.bri}"></div>
+    <div><label class="f">Affichage</label><select id="oMode"><option value="gauge"${op.mode === 'gauge' ? ' selected' : ''}>jauge (barre de LED)</option><option value="color"${op.mode === 'color' ? ' selected' : ''}>couleur (toutes les LED)</option><option value="dot"${op.mode === 'dot' ? ' selected' : ''}>point qui se déplace</option></select></div>
+    <div><label class="f">Couleurs (début → fin)</label><div class="row"><input type="color" id="oC1" value="${op.c1 || '#00ff00'}"><input type="color" id="oC2" value="${op.c2 || '#ff0000'}">
+    <label class="sw"><input type="checkbox" id="oC3on"${op.c3 ? ' checked' : ''}> 3ᵉ</label><input type="color" id="oC3" value="${op.c3 || '#0000ff'}"></div></div></div>
+    <p class="mute">Au-delà de 8 LED ou d'une luminosité de 60, alimente le ruban avec une alimentation 5 V séparée (masse commune avec la carte).</p>`;
+  else if (o.type === 'buzzer') h += `<div><label class="f">Note (Hz)</label><input type="number" id="oFreq" value="${op.freq}"></div><div><label class="f">Façon de biper</label><select id="oMode"><option value="alert"${op.mode !== 'repeat' ? ' selected' : ''}>3 bips quand ça s'active</option><option value="repeat"${op.mode === 'repeat' ? ' selected' : ''}>un bip toutes les 2 s tant que c'est actif</option></select></div></div>`;
+  else if (o.type === 'oled') h += `<div><label class="f">Modèle d'écran</label><select id="oChip"><option value="ssd1306"${op.chip === 'ssd1306' ? ' selected' : ''}>0,96" 128×64 (SSD1306)</option><option value="sh1106"${op.chip === 'sh1106' ? ' selected' : ''}>1,3" 128×64 (SH1106)</option><option value="ssd1306_32"${op.chip === 'ssd1306_32' ? ' selected' : ''}>0,91" 128×32 (SSD1306)</option></select></div>
+    <div><label class="f">Page suivante toutes les (s)</label><input type="number" id="oEvery" min="0" value="${op.every}"></div><div><label class="f">Contraste</label><input type="range" id="oContrast" min="0" max="255" value="${op.contrast}"></div></div>
+    ${ck('oFlip', op.flip, 'Retourner l\'écran (180°)')}<p class="mute">Si l'écran 1,3" affiche des pixels décalés, choisis SH1106. 0 s = pages changées seulement par un bouton.</p>`;
+  else if (o.type === 'nokia') h += `<div><label class="f">Page suivante toutes les (s)</label><input type="number" id="oEvery" min="0" value="${op.every}"></div>
+    <div><label class="f">Contraste : <span id="oContrastV">${op.contrast}</span></label><input type="range" id="oContrast" min="40" max="220" value="${op.contrast}"></div></div>
+    ${ck('oFlip', op.flip, 'Retourner l\'écran (180°)')}${ck('oBlLow', op.bllow, 'Rétroéclairage actif à l\'état BAS (s\'il est allumé pendant la veille et éteint sinon, coche cette case)')}
+    <p class="mute">Écran tout gris ou noir : baisse le contraste. Texte trop pâle : monte-le (souvent entre 110 et 150). Clique « Essayer sur l'objet » pour voir le résultat.</p>`;
+  else h += '</div><p class="mute">Pas d\'option pour ce composant.</p>';
+  return h + '</div>';
+}
+function testEditor(o) {
+  const T = TYPES[o.type];
+  if (o.type === 'mqtt') {
+    const sid = o.src === '*' ? (CFG.sources[0] || {}).id : o.src, [lo, hi] = srcRange(sid), ok = ED.tried >= 0;
+    return `<div class="card"><h2>🧪 Essayer</h2><p class="mute">Clique « ▶ Essayer sur l'objet » (en bas) : l'objet se connecte au serveur. Le curseur publie aussitôt une valeur d'essai${sid ? ' sur le sujet de « ' + esc(sid) + ' »' : ''}.</p>
+      <div class="row"><input type="range" id="eTest" min="${lo}" max="${hi}" step="${(hi - lo) / 400}" value="${(lo + hi) / 2}"${ok ? '' : ' disabled'}> <input type="number" step="any" id="eTestN" value="${+((lo + hi) / 2).toFixed(2)}"${ok ? '' : ' disabled'}>
+      <button class="btn sm" onclick="edTestStop()"${ok ? '' : ' disabled'}>⏹ Arrêter l'essai</button></div></div>`;
+  }
+  if (isScreen(o.type)) return `<div class="card"><h2>🧪 Essayer</h2><p class="mute">Clique « Essayer sur l'objet » pour voir les pages sur le vrai écran. Pour tester avec d'autres valeurs, simule les données depuis le tableau de bord (🧪).</p></div>`;
+  let lo, hi;
+  if (T.onoff) { const t = num(o.thr, 0); lo = t - Math.max(Math.abs(t), 5); hi = t + Math.max(Math.abs(t), 5); }
+  else { const p = o.map.pts.map(q => q[0]); lo = Math.min.apply(null, p); hi = Math.max.apply(null, p); const pad = (hi - lo) * 0.1 || 1; lo -= pad; hi += pad; }
+  const ok = ED.tried >= 0;
+  let h = `<div class="card"><h2>🧪 Essayer en vrai</h2><p class="mute">1. Clique « ▶ Essayer sur l'objet » (en bas). 2. Bouge le curseur : la sortie réagit comme si la donnée valait cette valeur (pendant 1 minute).</p>
+    <div class="row"><input type="range" id="eTest" min="${lo}" max="${hi}" step="${(hi - lo) / 400}" value="${(lo + hi) / 2}"${ok ? '' : ' disabled'}> <input type="number" step="any" id="eTestN" value="${+((lo + hi) / 2).toFixed(2)}"${ok ? '' : ' disabled'}>
+    <button class="btn sm" onclick="edTestStop()"${ok ? '' : ' disabled'}>⏹ Arrêter l'essai</button></div>`;
+  if (o.type.startsWith('step') && o.opt.mode !== 'speed') h += `<h3>Recaler l'aiguille</h3><p class="mute">Bouge le moteur sans changer le réglage, jusqu'à ce que l'aiguille soit au bon endroit.</p><div class="row">
+    ${[-10, -1, 1, 10].map(d => `<button class="btn sm" onclick="edJog(${d})"${ok ? '' : ' disabled'}>${d > 0 ? '+' : ''}${d}°</button>`).join('')}
+    <button class="btn sm" onclick="edJog(0)"${ok ? '' : ' disabled'}>📍 La position actuelle devient 0°</button></div>`;
+  return h + '</div>';
+}
+function oledEditor(o) {
+  const pages = o.opt.pages || (o.opt.pages = []);
+  let h = `<div class="card"><h2>🖥️ Pages de l'écran</h2><p class="mute">Une ligne de texte = une ligne de l'écran. Clique sur une étiquette pour l'insérer là où se trouve le curseur.</p>
+    <div><span class="mute">Valeurs : </span>${CFG.sources.map(s => `<span class="chip" onclick="oledIns('{${esc(s.id)}}')">{${esc(s.id)}}</span>`).join('')}
+    ${['{heure}', '{date}', '{ip}', '{nom}'].map(x => `<span class="chip" onclick="oledIns('${x}')">${x}</span>`).join('')}</div>
+    <div><span class="mute">Lignes spéciales (en début de ligne) : </span><span class="chip" onclick="oledIns('#')"># grand</span><span class="chip" onclick="oledIns('*')">* gras</span>
+    <span class="chip" onclick="oledIns('=${esc(CFG.sources.length ? CFG.sources[0].id : 'donnee')} 0 100')">= barre (donnée min max)</span></div>
+    <div class="row top" style="margin-top:8px"><div style="flex:1;min-width:260px">`;
+  pages.forEach((p, k) => {
+    h += `<label class="f">Page ${k + 1} ${pages.length > 1 ? `<button class="btn sm" onclick="pageDel(${k})">✖</button>` : ''}</label><textarea id="ePage${k}" rows="5" onfocus="ED.ta=${k};ED.pg=${k};drawOled()">${esc(p)}</textarea>`;
+  });
+  h += `${pages.length < 4 ? '<button class="btn sm" onclick="pageAdd()">＋ page</button>' : ''}</div>
+    <div><label class="f" id="eOledL">Aperçu (approximatif) de la page ${(ED.pg || 0) + 1}</label><canvas id="eOled" width="256" height="128" style="background:#000;border-radius:6px;border:6px solid #111;max-width:100%"></canvas></div></div></div>`;
+  return h;
+}
+function oledIns(t) {
+  const k = ED.ta != null ? ED.ta : 0, ta = $('#ePage' + k); if (!ta) return;
+  const a = ta.selectionStart, b = ta.selectionEnd;
+  ta.value = ta.value.slice(0, a) + t + ta.value.slice(b); ta.focus(); ta.selectionStart = ta.selectionEnd = a + t.length;
+  edRead();
+}
+function pageAdd() { ED.o.opt.pages.push('*Titre\n#{' + (CFG.sources.length ? CFG.sources[0].id : 'heure') + '}'); render(); }
+function pageDel(k) { ED.o.opt.pages.splice(k, 1); ED.pg = 0; render(); }
+function expandTpl(t) {
+  return t.replace(/\{([^}]+)\}/g, (m, k) => {
+    k = k.trim(); const lk = k.toLowerCase();
+    if (lk === 'heure') return ST && ST.time ? ST.time.slice(0, 5) : '--:--';
+    if (lk === 'date') { const d = new Date(); return ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2); }
+    if (lk === 'ip') return ST && ST.wifi.ok ? ST.wifi.ip : '192.168.4.1';
+    if (lk === 'nom') return SYS ? SYS.name : 'POCL';
+    if (lk === 'wifi') return ST && ST.wifi.ok ? ST.wifi.ssid : '-';
+    const s = srcLive(k); return s ? s.txt : (srcIdx(k) >= 0 ? '--' : '?');
+  });
+}
+function drawOled() {
+  const c = $('#eOled'); if (!c || !ED) return;
+  const o = ED.o, nk = o.type === 'nokia', cols = nk ? 84 : 128, rows = nk ? 48 : o.opt.chip === 'ssd1306_32' ? 32 : 64, k = nk ? 3 : 2, x = c.getContext('2d');
+  const F = nk ? {big: [16, 19], bold: [9, 11], norm: [8, 9]} : {big: [22, 26], bold: [10.5, 14], norm: [8.5, 11]};
+  const fg = nk ? '#1f2a1a' : '#e0f2fe';
+  c.width = cols * k; c.height = rows * k; c.style.background = nk ? '#a7c08d' : '#000'; c.style.borderColor = nk ? '#3b4a32' : '#111';
+  x.fillStyle = nk ? '#a7c08d' : '#000'; x.fillRect(0, 0, c.width, c.height); x.fillStyle = fg; x.textBaseline = 'top';
+  const tpl = (o.opt.pages || [])[ED.pg || 0] || ''; let y = 0;
+  if ($('#eOledL')) $('#eOledL').textContent = 'Aperçu (approximatif) de la page ' + ((ED.pg || 0) + 1);
+  const center = (s, yy) => { const w = x.measureText(s).width; x.fillText(s, Math.max(0, (c.width - w) / 2), yy); };
+  tpl.split('\n').forEach(line => {
+    if (y >= rows) return;
+    if (line[0] === '#') { x.font = `bold ${F.big[0] * k * 0.95}px Arial,sans-serif`; center(expandTpl(line.slice(1)), (y + 1) * k); y += F.big[1]; }
+    else if (line[0] === '*') { x.font = `bold ${F.bold[0] * k}px Helvetica,Arial,sans-serif`; center(expandTpl(line.slice(1)), y * k); y += F.bold[1]; }
+    else if (line[0] === '=') {
+      const a = line.slice(1).trim().split(/\s+/), s = srcLive(a[0]), mn = num(a[1], 0), mx = num(a[2], 100);
+      const f = s && s.v != null && mx !== mn ? Math.max(0, Math.min(1, (s.v - mn) / (mx - mn))) : 0;
+      x.strokeStyle = fg; x.lineWidth = k; x.strokeRect(k / 2, (y + 1) * k, (cols - 1) * k, 8 * k); x.fillRect(2 * k, (y + 3) * k, (cols - 4) * k * f, 5 * k); y += 12;
+    } else { x.font = `${F.norm[0] * k}px ${nk ? 'monospace' : 'Helvetica,Arial,sans-serif'}`; x.fillText(expandTpl(line), 0, y * k); y += F.norm[1]; }
+  });
+}
+function edRead(ev) {
+  if (!ED) return;
+  const tg = ev && ev.target ? ev.target.id : '', oldSrc = ED.o.src;
+  const o = ED.o, T = TYPES[o.type], v = id => { const e = $('#' + id); return e ? e.value : undefined; }, c = id => { const e = $('#' + id); return e ? e.checked : undefined; };
+  o.name = v('eName') || '';
+  if ($('#eSrc')) { o.src = v('eSrc'); const sv = $('#eSrcV'); if (sv) sv.dataset.live = 'srcval:' + o.src; }
+  o.pins = T.roles.map((r, k) => v('ePin' + k) || '');
+  if (T.onoff) { o.cond = v('eCond'); o.thr = (v('eThr') || '').trim(); o.hyst = num(v('eHyst'), 0); o.inv = !!c('eInv'); }
+  if (o.map) {
+    o.map.pts.forEach((p, k) => { p[0] = num(v('eX' + k), p[0]); p[1] = num(v('eY' + k), p[1]); });
+    o.map.steps = !!c('eSteps'); o.smooth = num(v('eSmooth'), 0); if ($('#eSmV')) $('#eSmV').textContent = o.smooth;
+  }
+  const op = o.opt || (o.opt = {});
+  if (o.type === 'servo') { op.pmin = num(v('oPmin'), 544); op.pmax = num(v('oPmax'), 2400); op.rel = !!c('oRel'); }
+  if (o.type.startsWith('step')) {
+    const m = v('oMode');
+    if (m !== op.mode) { op.mode = m; o.map.pts = m === 'speed' ? [[0, 0], [100, 10]] : [[0, 0], [100, 180]]; setTimeout(render, 0); }
+    op.spr = num(v('oSpr'), 4096); op.speed = num(v('oSpeed'), 800); op.rev = !!c('oRev');
+  }
+  if (o.type === 'relay') op.low = !!c('oLow');
+  if (o.type === 'neopixel') {
+    op.n = num(v('oN'), 8); op.bri = num(v('oBri'), 40); $('#oBriV').textContent = op.bri;
+    if (op.mode !== v('oMode')) { op.mode = v('oMode'); setTimeout(render, 0); }
+    op.c1 = v('oC1'); op.c2 = v('oC2'); op.c3 = c('oC3on') ? v('oC3') : '';
+  }
+  if (o.type === 'buzzer') { op.freq = num(v('oFreq'), 2000); op.mode = v('oMode'); }
+  if (o.type === 'mqtt') {
+    op.host = (v('mHost') || '').trim(); op.port = num(v('mPort'), 1883); op.user = v('mUser') || ''; op.pass = v('mPass') || '';
+    op.topic = (v('mTopic') || '').trim(); op.mode = v('mMode'); op.every = num(v('mEvery'), 10); op.retain = !!c('mRetain'); op.json = !!c('mJson');
+  }
+  if (o.type === 'nokia') {
+    op.every = num(v('oEvery'), 5); op.contrast = num(v('oContrast'), 128); op.flip = !!c('oFlip'); op.bllow = !!c('oBlLow');
+    if ($('#oContrastV')) $('#oContrastV').textContent = op.contrast;
+    op.pages = op.pages.map((p, k) => { const e = $('#ePage' + k); return e ? e.value : p; });
+  }
+  if (o.type === 'oled') {
+    op.chip = v('oChip'); op.every = num(v('oEvery'), 5); op.contrast = num(v('oContrast'), 200); op.flip = !!c('oFlip');
+    op.pages = op.pages.map((p, k) => { const e = $('#ePage' + k); return e ? e.value : p; });
+  }
+  if (tg === 'eTest') { $('#eTestN').value = (+v('eTest')).toFixed(2); edTest(+v('eTest')); }
+  if (tg === 'eTestN') { $('#eTest').value = v('eTestN'); edTest(num(v('eTestN'), 0)); }
+  if (o.src !== oldSrc && ev && ev.type === 'change') setTimeout(render, 0);
+  edRefresh();
+}
+function edErrors() {
+  const o = ED.o, T = TYPES[o.type], err = [], warn = [];
+  T.roles.forEach((r, k) => {
+    const p = o.pins[k];
+    if (!p) { if (!r.opt) err.push('Choisis une broche pour « ' + r.n + ' ».'); return; }
+    const u = pinUsers(p, {out: ED.idx});
+    if (u.length) err.push(p + ' est déjà utilisée par ' + u.join(', ') + '.');
+    if (o.pins.some((q, j) => q === p && j !== k)) err.push(p + ' est choisie deux fois.');
+    if (B.inOnly.includes(p)) { err.push(p + ' est une entrée seulement : choisis une autre broche.'); return; }
+    pinWarn(p, o.type).forEach(w => warn.push(w));
+  });
+  if (o.type === 'mqtt') {
+    if (!o.opt.host) err.push("Indique l'adresse du serveur MQTT.");
+    if (!o.opt.topic) err.push('Indique le sujet (topic) des messages.');
+    if (o.opt.topic && o.src === '*' && o.opt.topic.indexOf('{id}') < 0) warn.push('Avec « toutes les données », mets {id} dans le sujet, sinon elles arrivent toutes sur le même sujet.');
+  }
+  if (!isScreen(o.type) && !o.src) warn.push('Aucune donnée choisie : la sortie ne bougera pas (sauf en essai).');
+  return {err: Array.from(new Set(err)), warn: Array.from(new Set(warn))};
+}
+function edRefresh() {
+  if (!ED) return;
+  const m = $('#ePinMsg');
+  if (m) { const e = edErrors(); m.innerHTML = e.err.map(x => `<div class="errbox">✖ ${esc(x)}</div>`).join('') + e.warn.map(x => `<div class="warnbox">⚠ ${esc(x)}</div>`).join(''); }
+  const w = $('#eWire'); if (w) w.innerHTML = wiringSVG([devOfOutput(ED.o)]);
+  drawChart(); drawOled();
+  const ec = $('[data-live="econd"]'); if (ec) ec.innerHTML = condNow();
+}
+function edCfg() {
+  const c = clone(CFG);
+  if (ED.idx >= 0) c.outputs[ED.idx] = clone(ED.o); else c.outputs.push(clone(ED.o));
+  return {c, idx: ED.idx >= 0 ? ED.idx : c.outputs.length - 1};
+}
+async function edTry() {
+  edRead();
+  const e = edErrors(); if (e.err.length) return toast(e.err[0], true);
+  const {c, idx} = edCfg();
+  try { await postJ('/api/config?save=0', c); ED.tried = idx; toast('Appliqué pour essai (pas encore enregistré)'); render(); }
+  catch (er) { toast('Échec : ' + er.message, true); }
+}
+let testTimer = null;
+function edTest(v) {
+  if (!ED) return;
+  ED.testV = v; drawChart();
+  if (ED.tried < 0) return;
+  clearTimeout(testTimer);
+  const out = ED.tried;
+  testTimer = setTimeout(() => api('/api/test?out=' + out + '&v=' + encodeURIComponent(v)).catch(e => toast(e.message, true)), 120);
+}
+function edTestStop() { if (!ED) return; ED.testV = null; drawChart(); if (ED.tried >= 0) api('/api/test?out=' + ED.tried + '&v=').catch(() => {}); }
+async function edJog(d) {
+  if (!ED || ED.tried < 0) return;
+  try { await api('/api/jog?out=' + ED.tried + (d === 0 ? '&zero=1' : '&deg=' + d)); if (d === 0) toast('Position actuelle = 0°'); } catch (e) { toast(e.message, true); }
+}
+async function edSave() {
+  edRead();
+  const e = edErrors(); if (e.err.length) return toast(e.err[0], true);
+  if (ED.idx >= 0) CFG.outputs[ED.idx] = ED.o; else CFG.outputs.push(ED.o);
+  const ok = await saveCfg();
+  if (ok) { ED = null; render(); }
+}
+async function edCancel() {
+  if (ED && ED.tried >= 0) await saveCfg(false, true);  // on remet la version enregistrée
+  ED = null; render();
+}
+
+// =====================================================================
+//  Boutons
+// =====================================================================
+VIEWS.btns = () => {
+  let h = `<div class="card"><div class="row between"><h2>🔘 Boutons</h2><button class="btn pri" onclick="addButton()">➕ Ajouter un bouton</button></div>
+    <p class="mute">Un bouton poussoir se branche ${esc(B.btnNote)}. <b>Appui long (3 s) sur n'importe quel bouton</b> : le point d'accès de configuration s'ouvre pour 10 minutes.</p>`;
+  if (!CFG.buttons.length) h += '<p>Aucun bouton pour l\'instant.</p>';
+  CFG.buttons.forEach((b, i) => {
+    const needT = b.action === 'toggle' || b.action === 'zero';
+    const outs = CFG.outputs.map((o, k) => [k, o]).filter(x => b.action !== 'zero' || x[1].type.startsWith('step'));
+    h += `<div class="item"><div class="row top"><div><label class="f">Nom</label><input value="${esc(b.name || '')}" onchange="btnSet(${i},'name',this.value)" style="width:130px"></div>
+      <div><label class="f">Broche</label>${pinSelect('bPin' + i, b.pin, 'button', false, {btn: i}).replace('<select', `<select onchange="btnSet(${i},'pin',this.value)"`)}</div>
+      <div><label class="f">Action</label><select onchange="btnSet(${i},'action',this.value)">${Object.keys(ACTS).map(a => `<option value="${a}"${a === b.action ? ' selected' : ''}>${ACTS[a]}</option>`).join('')}</select></div>
+      ${needT ? `<div><label class="f">Sortie</label><select onchange="btnSet(${i},'target',+this.value)"><option value="-1">— choisir —</option>${outs.map(x => `<option value="${x[0]}"${x[0] === b.target ? ' selected' : ''}>${esc(x[1].name || TYPES[x[1].type].l)}</option>`).join('')}</select></div>` : ''}
+      <div><label class="f">État</label><span data-live="bp:${i}"></span></div></div>
+      <div class="row"><button class="btn sm bad" onclick="delButton(${i})">🗑️</button></div></div>
+      ${pinWarn(b.pin, 'button').concat(pinUsers(b.pin, {btn: i}).length ? [b.pin + ' est déjà utilisée par ' + pinUsers(b.pin, {btn: i}).join(', ')] : []).map(w => `<div class="warnbox">⚠ ${esc(w)}</div>`).join('')}`;
+  });
+  return h + '</div>';
+};
+async function addButton() {
+  if (CFG.buttons.length >= 6) return toast('6 boutons au maximum', true);
+  CFG.buttons.push({pin: firstFree(B.rec.button, []) || B.rec.button[0], action: 'refresh', target: -1, name: ''});
+  await saveCfg(); render();
+}
+async function btnSet(i, k, v) { CFG.buttons[i][k] = v; await saveCfg(); render(); }
+async function delButton(i) { CFG.buttons.splice(i, 1); await saveCfg(); render(); }
+
+// =====================================================================
+//  Câblage
+// =====================================================================
+VIEWS.wire = () => {
+  const devs = allDevices();
+  let h = `<div class="card"><div class="row between"><h2>🔌 Schéma de câblage</h2><button class="btn" onclick="print()">🖨️ Imprimer</button></div>`;
+  if (!devs.length) return h + '<p>Ajoute des sorties ou des boutons : leur câblage apparaîtra ici.</p></div>';
+  h += `<div class="svgbox wide">${wiringSVG(devs)}</div><p class="mute">Carte : <b>${esc(B.name)}</b>. Les lignes du bas sont les « rails » d'alimentation : tous les fils noirs vont sur GND, les rouges sur 5V, les orange sur 3V3 (comme sur une plaque d'essai).${B.id === 'esp32c3' ? " Les numéros sont ceux imprimés sur la carte (USB-C en haut). Le bouton BOOT peut servir de bouton (broche 9)." : ''}${B.id === 'esp32s2' ? " Les numéros sont ceux imprimés sur la carte (USB-C en bas). Les deux rangées extérieures sont celles de la D1 mini : ses shields se branchent tels quels. Le bouton « 0 » peut servir de bouton." : ''}${B.id === 'esp32' ? " Schéma d'une carte 30 broches : sur une carte 38 broches, repère simplement les numéros (D23 = GPIO23 = « 23 »). VIN donne le 5 V de l'USB." : ''}</p></div>`;
+  h += '<div class="card"><h2>📋 Liste des fils</h2><div style="overflow:auto"><table class="lt"><tr><th>Composant</th><th>Patte</th><th>→ Carte</th><th>Remarque</th></tr>';
+  devs.forEach(d => d.pins.forEach(p => {
+    h += `<tr><td>${esc(d.t)}</td><td><span class="dot" style="background:${p._c || '#999'}"></span>${esc(p.l)}</td><td><b>${esc(pinName(p.to))}</b></td><td class="mute">${esc([p.h, p.res ? 'résistance ' + p.res + ' en série' : '', B.info[p.to] || ''].filter(Boolean).join(' · '))}</td></tr>`;
+  }));
+  h += '</table></div></div>';
+  // alimentation
+  let ma = B.base; const notes = [];
+  CFG.outputs.forEach(o => {
+    const T = TYPES[o.type];
+    if (o.type === 'neopixel') ma += Math.round(o.opt.n * 60 * o.opt.bri / 255); else ma += T.ma || 0;
+    if (T.note) notes.push(T.ic + ' ' + T.note);
+  });
+  const warn = [];
+  CFG.outputs.forEach(o => (o.pins || []).forEach(p => pinWarn(p, o.type).forEach(w => warn.push(w))));
+  CFG.buttons.forEach(b => pinWarn(b.pin, 'button').forEach(w => warn.push(w)));
+  h += `<div class="card"><h2>⚡ Alimentation</h2><p>Consommation maximale estimée : <b>${ma} mA</b>.</p>
+    ${ma > 450 ? '<div class="warnbox">⚠ Un port USB d\'ordinateur fournit environ 500 mA : utilise un chargeur 5 V / 2 A, ou alimente les moteurs et les LED à part (en reliant les GND).</div>' : '<div class="okbox">✔ Un câble USB branché sur un ordinateur ou un chargeur suffit.</div>'}
+    ${notes.map(n => `<div class="warnbox">${esc(n)}</div>`).join('')}${Array.from(new Set(warn)).map(w => `<div class="warnbox">⚠ ${esc(w)}</div>`).join('')}
+    <p class="mute">Toujours débrancher l'USB avant de modifier le câblage.</p></div>`;
+  return h;
+};
+
+// =====================================================================
+//  Réglages : WiFi, objet, nuit, recettes, mise à jour
+// =====================================================================
+const RECIPES = [
+  {n: '🌡️ Thermomètre à aiguille', d: 'Température à Bordeaux (Open-Meteo) → servo sur D5 + écran OLED', c: {
+    sources: [{id: 'temp', type: 'url', label: 'Température à Bordeaux (°C)', url: OM, path: 'current.temperature_2m', kind: 'num', every: 900, dec: 1}],
+    outputs: [{type: 'servo', name: 'Aiguille', src: 'temp', pins: ['D5'], map: {pts: [[-5, 0], [35, 180]], steps: false}, smooth: 2, opt: {pmin: 544, pmax: 2400, rel: true}},
+      {type: 'oled', name: 'Écran', src: '', pins: ['D2', 'D1'], opt: {chip: 'ssd1306', flip: false, every: 0, contrast: 200, pages: ['*Bordeaux\n#{temp} °C\n{date}  {heure}']}}],
+    buttons: [], night: {on: false, from: 22, to: 7}}},
+  {n: '🌬️ Éolienne qui tourne avec le vent', d: 'Vent à Bordeaux → moteur 28BYJ-48 (D5 à D8), veille la nuit, bouton sur D3', c: {
+    sources: [{id: 'vent', type: 'url', label: 'Vent à Bordeaux (km/h)', url: OM, path: 'current.wind_speed_10m', kind: 'num', every: 900, dec: 0}],
+    outputs: [{type: 'stepper', name: 'Hélice', src: 'vent', pins: ['D5', 'D6', 'D7', 'D8'], map: {pts: [[0, 0], [5, 2], [50, 14]], steps: false}, smooth: 3, opt: {spr: 4096, speed: 1000, mode: 'speed', rev: false}}],
+    buttons: [{pin: 'D3', action: 'sleep', target: -1, name: 'Veille'}], night: {on: true, from: 22, to: 7}}},
+  {n: '🌈 Humidité en couleurs', d: 'Humidité à Bordeaux → anneau NeoPixel 12 LED sur D6 (rouge = sec → bleu = humide) + relais sur D7 au-dessus de 80 %', c: {
+    sources: [{id: 'humid', type: 'url', label: 'Humidité à Bordeaux (%)', url: OM, path: 'current.relative_humidity_2m', kind: 'num', every: 900, dec: 0}],
+    outputs: [{type: 'neopixel', name: 'Anneau', src: 'humid', pins: ['D6'], map: {pts: [[20, 0], [100, 100]], steps: false}, smooth: 2, opt: {n: 12, bri: 30, mode: 'color', c1: '#ff3300', c2: '#00ff66', c3: '#0044ff'}},
+      {type: 'relay', name: 'Relais humide', src: 'humid', pins: ['D7'], cond: '>', thr: '80', hyst: 3, inv: false, opt: {low: false}}],
+    buttons: [], night: {on: false, from: 22, to: 7}}},
+  {n: '🎛️ Démo sans Internet', d: 'Potentiomètre sur A0 → servo D5 + LED D7 : pour tester le câblage', c: {
+    sources: [{id: 'pot', type: 'analog', label: 'Potentiomètre (A0)', dec: 0}],
+    outputs: [{type: 'servo', name: 'Servo', src: 'pot', pins: ['D5'], map: {pts: [[0, 0], [1023, 180]], steps: false}, smooth: 0.3, opt: {pmin: 544, pmax: 2400, rel: false}},
+      {type: 'led', name: 'LED', src: 'pot', pins: ['D7'], map: {pts: [[0, 0], [1023, 100]], steps: false}, smooth: 0.2}],
+    buttons: [], night: {on: false, from: 22, to: 7}}}
+];
+VIEWS.sys = () => {
+  const s = SYS || {nets: [], ap: 0, appass: '', name: ''};
+  let h = `<div class="card"><h2>📶 WiFi</h2><div class="mute">État : <span data-live="wifi"></span> · <span data-live="addr"></span></div>
+    <h3>Réseaux mémorisés (3 au maximum)</h3>${s.nets.length ? s.nets.map((n, i) => `<div class="item"><span>📶 ${esc(n)}</span><button class="btn sm bad" onclick="wifiDel(SYS.nets[${i}])">Oublier</button></div>`).join('') : '<p class="mute">Aucun : l\'objet reste en point d\'accès.</p>'}
+    <h3>Ajouter un réseau</h3><div class="row"><button class="btn" onclick="wifiScan()"${WS.busy ? ' disabled' : ''}>🔍 ${WS.busy ? 'Recherche…' : 'Chercher les réseaux'}</button></div>`;
+  if (WS.list) h += WS.list.map((n, i) => `<div class="item"><span>${bars(n.r)} ${esc(n.s)} ${n.lock ? '🔒' : ''}</span><button class="btn sm" onclick="WS.pick=WS.list[${i}].s;render();setTimeout(()=>{const e=$('#wsPass');if(e)e.focus()},50)">Choisir</button></div>`).join('');
+  h += `<div class="row top" style="margin-top:8px"><div><label class="f">Nom du réseau</label><input id="wsSsid" value="${esc(WS.pick || '')}" placeholder="nom du WiFi"></div>
+    <div><label class="f">Mot de passe</label><input id="wsPass" type="password" placeholder="mot de passe"></div>
+    <div><label class="f">&nbsp;</label><button class="btn pri" onclick="wifiAdd()">Se connecter</button></div></div><div id="wsMsg">${WS.msg || ''}</div>
+    <p class="mute">⚠ Les réseaux d'entreprise (WPA2-Entreprise, eduroam…) et la bande 5 GHz ne sont pas acceptés par l'ESP8266. Un partage de connexion de téléphone (2,4 GHz) marche très bien.</p></div>`;
+  h += `<div class="card"><h2>📡 Point d'accès de configuration</h2><p class="mute">Quand ton téléphone ou ton ordinateur se connecte au WiFi <b>${esc(s.name)}</b>, cette page s'ouvre (ou va sur http://192.168.4.1). Un appui long (3 s) sur un bouton l'ouvre aussi pour 10 minutes.</p>
+    <div class="row top"><div><label class="f">Ouvert</label><select id="sAp">${[[0, 'les 5 premières minutes après chaque démarrage (conseillé)'], [1, 'tout le temps'], [2, 'seulement quand le WiFi ne marche pas']].map(a => `<option value="${a[0]}"${s.ap === a[0] ? ' selected' : ''}>${a[1]}</option>`).join('')}</select></div>
+    <div><label class="f">Mot de passe (8 caractères mini, vide = ouvert)</label><input id="sApPass" value="${esc(s.appass)}"></div>
+    <div><label class="f">Nom de l'objet</label><input id="sName" value="${esc(s.name)}" maxlength="24"></div></div>
+    <div class="row" style="margin-top:10px"><button class="btn pri" onclick="sysSave()">💾 Enregistrer</button><span class="mute">(changer le nom ou le mot de passe redémarre l'objet)</span></div></div>`;
+  const n = CFG.night || {on: false, from: 22, to: 7}, hrs = sel => Array.from({length: 24}, (_, i) => `<option value="${i}"${i === sel ? ' selected' : ''}>${i} h</option>`).join('');
+  h += `<div class="card"><h2>🌙 Veille de nuit</h2><div class="row"><label class="sw"><input type="checkbox" id="nOn"${n.on ? ' checked' : ''}> Éteindre les sorties de</label><select id="nFrom">${hrs(n.from)}</select> à <select id="nTo">${hrs(n.to)}</select>
+    <button class="btn" onclick="nightSave()">💾 Enregistrer</button></div><p class="mute">Un appui sur n'importe quel bouton réveille l'objet 2 minutes.</p></div>`;
+  h += `<div class="card"><h2>📦 Recette (partager une configuration)</h2><p class="mute">La recette contient les données, les sorties et les boutons (pas les mots de passe WiFi). Exporte-la pour la partager avec un autre groupe.</p>
+    <div class="row"><button class="btn" onclick="exportCfg()">⬇️ Exporter</button><label class="btn">⬆️ Importer<input type="file" accept=".json,application/json" class="hidden" onchange="importCfg(this.files[0])"></label>
+    <button class="btn bad" onclick="if(confirm('Tout effacer (données, sorties, boutons) ?')){CFG={sources:[],outputs:[],buttons:[],night:{on:false,from:22,to:7}};saveCfg().then(render)}">🧹 Tout effacer</button></div>
+    <h3>Exemples prêts à l'emploi</h3>${RECIPES.map((r, i) => `<div class="item"><div><b>${esc(r.n)}</b><div class="mute">${esc(PIN_MAPS[B.id] ? r.d.replace(/\b(D\d|A0)\b/g, p => PIN_MAPS[B.id][p] || p) : r.d)}</div></div><button class="btn sm" onclick="loadRecipe(${i})">Charger</button></div>`).join('')}</div>`;
+  h += `<div class="card"><h2>🧰 Maintenance</h2><div class="mute">Carte ${esc(B.name)} · version ${esc(s.ver || '?')} · puce ${esc(s.chip || '?')} · MAC ${esc(s.mac || '?')} · programme ${Math.round((s.sketch || 0) / 1024)} Ko, place libre ${Math.round((s.free || 0) / 1024)} Ko</div>
+    <h3>Mettre à jour le firmware</h3><p class="mute">Fichier à envoyer : <code>${B.id === 'esp8266' ? 'bin/pocl_esp8266.bin' : 'bin/pocl_' + B.id + '_ota.bin'}</code> (créé par <code>./flash.sh --compile</code>).</p><div class="row"><input type="file" id="fw" accept=".bin"><button class="btn" onclick="fwUpload()">⬆️ Envoyer</button><span id="fwP" class="mute"></span></div>
+    <h3>Redémarrer</h3><div class="row"><button class="btn" onclick="if(confirm('Redémarrer ?'))act('reboot','Redémarrage…')">🔁 Redémarrer</button>
+    <button class="btn bad" onclick="if(confirm('Tout effacer, y compris le WiFi, et revenir à zéro ?'))act('factory','Réinitialisation…')">⚠ Réinitialisation complète</button></div></div>`;
+  return h;
+};
+const bars = r => (r > -55 ? '▂▄▆█' : r > -67 ? '▂▄▆' : r > -78 ? '▂▄' : '▂');
+async function reloadSys() { try { SYS = await api('/api/system'); $('#hName').textContent = SYS.name; B = BOARDS[SYS.board] || BOARDS.esp8266; } catch (e) { /* ignorer */ } }
+async function wifiScan() {
+  WS.busy = true; WS.list = null; render();
+  try {
+    await api('/api/scan?new=1');
+    for (let k = 0; k < 25; k++) { await sleep(800); const j = await api('/api/scan'); if (!j.running) { WS.list = (j.nets || []).sort((a, b) => b.r - a.r); break; } }
+  } catch (e) { toast('Recherche impossible : ' + e.message, true); }
+  WS.busy = false; render();
+}
+async function wifiAdd() {
+  const s = $('#wsSsid').value.trim(), p = $('#wsPass').value;
+  if (!s) return toast('Choisis un réseau', true);
+  try {
+    await postJ('/api/system', {add: {s, p}});
+    WS.pick = s; WS.msg = '<div class="infobox">⏳ Connexion à « ' + esc(s) + ' »… (si cette page se déconnecte, reconnecte-toi au WiFi ' + esc(SYS.name) + ')</div>'; render();
+    await reloadSys();
+    for (let k = 0; k < 25; k++) {
+      await sleep(1000);
+      if (ST && ST.wifi.ok && ST.wifi.ssid === s) {
+        WS.msg = `<div class="okbox">✔ Connecté ! L'objet est joignable sur ce réseau à <b>http://${ST.wifi.ip}</b> ou <b>http://${esc(ST.wifi.host)}</b>. Note l'adresse : pour l'utiliser, repasse ton appareil sur le WiFi « ${esc(s)} ».</div>`;
+        render(); return;
+      }
+    }
+    WS.msg = '<div class="warnbox">Pas encore connecté : vérifie le mot de passe, et que le réseau est en 2,4 GHz. L\'objet continue d\'essayer.</div>'; render();
+  } catch (e) { toast(e.message, true); }
+}
+async function wifiDel(n) { if (!confirm('Oublier « ' + n + ' » ?')) return; try { await postJ('/api/system', {del: n}); await reloadSys(); render(); } catch (e) { toast(e.message, true); } }
+async function sysSave() {
+  const b = {ap: +$('#sAp').value, appass: $('#sApPass').value, name: $('#sName').value.trim()};
+  try { const r = await postJ('/api/system', b); toast(r.reboot ? "Enregistré : l'objet redémarre…" : 'Enregistré ✔'); await reloadSys(); if (!r.reboot) render(); } catch (e) { toast(e.message, true); }
+}
+async function nightSave() { CFG.night = {on: $('#nOn').checked, from: +$('#nFrom').value, to: +$('#nTo').value}; await saveCfg(); }
+function exportCfg() {
+  const a = document.createElement('a');
+  const c = clone(Object.assign({board: B.id}, CFG));
+  c.outputs.forEach(o => { if (o.type === 'mqtt' && o.opt) o.opt.pass = ''; });  // pas de mot de passe dans un fichier partagé
+  c.sources.forEach(s => { delete s.auth; });  // ni de clé d'API
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(c, null, 2)], {type: 'application/json'}));
+  a.download = (SYS ? SYS.name : 'pocl') + '-recette.json'; a.click();
+}
+function importCfg(f) {
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = async () => {
+    try {
+      const c = JSON.parse(r.result);
+      if (!Array.isArray(c.sources) || !Array.isArray(c.outputs)) throw new Error('ce fichier n\'est pas une recette POCL');
+      const from = c.board;
+      CFG = mapPins(Object.assign({sources: [], outputs: [], buttons: [], night: {on: false, from: 22, to: 7}}, c), from, B.id);
+      if (await saveCfg()) { toast(from && from !== B.id ? 'Recette faite pour une autre carte : broches converties, vérifie le câblage' : 'Recette importée ✔', from && from !== B.id); TAB = 'wire'; render(); }
+    } catch (e) { toast('Import impossible : ' + e.message, true); }
+  };
+  r.readAsText(f);
+}
+async function loadRecipe(i) {
+  if ((CFG.sources.length || CFG.outputs.length) && !confirm('Remplacer la configuration actuelle par cet exemple ?')) return;
+  CFG = mapPins(clone(RECIPES[i].c), 'esp8266', B.id);
+  if (await saveCfg()) { toast('Exemple chargé : regarde le câblage !'); TAB = 'wire'; render(); }
+}
+async function fwUpload() {
+  const f = $('#fw').files[0]; if (!f) return toast('Choisis un fichier .bin', true);
+  // En-tête d'image ESP : 0xE9 ; pour la famille ESP32, octet 8 = 0xEE et octets 12-13 = type de puce (0 ESP32, 2 ESP32-S2, 5 ESP32-C3)
+  const hd = new Uint8Array(await f.slice(0, 16).arrayBuffer());
+  const ota = B.id === 'esp8266' ? 'pocl_esp8266.bin' : 'pocl_' + B.id + '_ota.bin';
+  if (hd[0] !== 0xE9) return toast(B.id === 'esp8266' ? "Ce fichier n'est pas un firmware ESP" : 'Ce fichier sert au flash par USB : envoie plutôt ' + ota, true);
+  const chip = hd[12] | (hd[13] << 8), esp32fam = hd[8] === 0xEE;
+  const want = {esp32: 0, esp32s2: 2, esp32c3: 5}[B.id];
+  if (B.id === 'esp8266' ? esp32fam : (!esp32fam || chip !== want)) return toast('Ce firmware est pour une autre carte : envoie ' + ota, true);
+  if (!confirm('Mettre à jour le firmware avec « ' + f.name + ' » ? La configuration est conservée.')) return;
+  const fd = new FormData(); fd.append('firmware', f, f.name);
+  const x = new XMLHttpRequest(); x.open('POST', '/update');
+  x.upload.onprogress = e => { $('#fwP').textContent = Math.round(e.loaded / e.total * 100) + ' %'; };
+  x.onload = () => { $('#fwP').textContent = x.status === 200 && /success/i.test(x.responseText) ? '✔ terminé, redémarrage…' : '✖ ' + x.responseText.slice(0, 120); };
+  x.onerror = () => { $('#fwP').textContent = '✖ envoi interrompu'; };
+  x.send(fd);
+}
+
+// =====================================================================
+//  Démarrage
+// =====================================================================
+(async function init() {
+  try { CFG = Object.assign({sources: [], outputs: [], buttons: [], night: {on: false, from: 22, to: 7}}, await api('/api/config')); } catch (e) { toast('Configuration illisible : ' + e.message, true); }
+  await reloadSys();
+  if (SYS && !SYS.nets.length) TAB = 'sys';
+  render(); poll();
+})();
+</script>
+</body>
+</html>

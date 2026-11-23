@@ -1,0 +1,67 @@
+{
+  "sources": [
+    {
+      "id": "pot",
+      "type": "analog",
+      "label": "Potentiomètre (A0)",
+      "dec": 0
+    }
+  ],
+  "outputs": [
+    {
+      "type": "servo",
+      "name": "Servo",
+      "src": "pot",
+      "pins": [
+        "D5"
+      ],
+      "map": {
+        "pts": [
+          [
+            0,
+            0
+          ],
+          [
+            1023,
+            180
+          ]
+        ],
+        "steps": false
+      },
+      "smooth": 0.3,
+      "opt": {
+        "pmin": 544,
+        "pmax": 2400,
+        "rel": false
+      }
+    },
+    {
+      "type": "led",
+      "name": "LED",
+      "src": "pot",
+      "pins": [
+        "D7"
+      ],
+      "map": {
+        "pts": [
+          [
+            0,
+            0
+          ],
+          [
+            1023,
+            100
+          ]
+        ],
+        "steps": false
+      },
+      "smooth": 0.2
+    }
+  ],
+  "buttons": [],
+  "night": {
+    "on": false,
+    "from": 22,
+    "to": 7
+  }
+}

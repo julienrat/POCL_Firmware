@@ -1,0 +1,67 @@
+{
+  "sources": [
+    {
+      "id": "humid",
+      "type": "url",
+      "label": "Humidité à Bordeaux (%)",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=44.84&longitude=-0.58&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,cloud_cover&timezone=Europe%2FParis",
+      "path": "current.relative_humidity_2m",
+      "kind": "num",
+      "every": 900,
+      "dec": 0
+    }
+  ],
+  "outputs": [
+    {
+      "type": "neopixel",
+      "name": "Anneau",
+      "src": "humid",
+      "pins": [
+        "D6"
+      ],
+      "map": {
+        "pts": [
+          [
+            20,
+            0
+          ],
+          [
+            100,
+            100
+          ]
+        ],
+        "steps": false
+      },
+      "smooth": 2,
+      "opt": {
+        "n": 12,
+        "bri": 30,
+        "mode": "color",
+        "c1": "#ff3300",
+        "c2": "#00ff66",
+        "c3": "#0044ff"
+      }
+    },
+    {
+      "type": "relay",
+      "name": "Relais humide",
+      "src": "humid",
+      "pins": [
+        "D7"
+      ],
+      "cond": ">",
+      "thr": "80",
+      "hyst": 3,
+      "inv": false,
+      "opt": {
+        "low": false
+      }
+    }
+  ],
+  "buttons": [],
+  "night": {
+    "on": false,
+    "from": 22,
+    "to": 7
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "sources": [
+    {
+      "id": "vent",
+      "type": "url",
+      "label": "Vent à Bordeaux (km/h)",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=44.84&longitude=-0.58&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,cloud_cover&timezone=Europe%2FParis",
+      "path": "current.wind_speed_10m",
+      "kind": "num",
+      "every": 900,
+      "dec": 0
+    }
+  ],
+  "outputs": [
+    {
+      "type": "stepper",
+      "name": "Hélice",
+      "src": "vent",
+      "pins": [
+        "D5",
+        "D6",
+        "D7",
+        "D8"
+      ],
+      "map": {
+        "pts": [
+          [
+            0,
+            0
+          ],
+          [
+            5,
+            2
+          ],
+          [
+            50,
+            14
+          ]
+        ],
+        "steps": false
+      },
+      "smooth": 3,
+      "opt": {
+        "spr": 4096,
+        "speed": 1000,
+        "mode": "speed",
+        "rev": false
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "pin": "D3",
+      "action": "sleep",
+      "target": -1,
+      "name": "Veille"
+    }
+  ],
+  "night": {
+    "on": true,
+    "from": 22,
+    "to": 7
+  }
+}

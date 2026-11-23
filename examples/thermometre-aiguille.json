@@ -1,0 +1,67 @@
+{
+  "sources": [
+    {
+      "id": "temp",
+      "type": "url",
+      "label": "Température à Bordeaux (°C)",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude=44.84&longitude=-0.58&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,cloud_cover&timezone=Europe%2FParis",
+      "path": "current.temperature_2m",
+      "kind": "num",
+      "every": 900,
+      "dec": 1
+    }
+  ],
+  "outputs": [
+    {
+      "type": "servo",
+      "name": "Aiguille",
+      "src": "temp",
+      "pins": [
+        "D5"
+      ],
+      "map": {
+        "pts": [
+          [
+            -5,
+            0
+          ],
+          [
+            35,
+            180
+          ]
+        ],
+        "steps": false
+      },
+      "smooth": 2,
+      "opt": {
+        "pmin": 544,
+        "pmax": 2400,
+        "rel": true
+      }
+    },
+    {
+      "type": "oled",
+      "name": "Écran",
+      "src": "",
+      "pins": [
+        "D2",
+        "D1"
+      ],
+      "opt": {
+        "chip": "ssd1306",
+        "flip": false,
+        "every": 0,
+        "contrast": 200,
+        "pages": [
+          "*Bordeaux\n#{temp} °C\n{date}  {heure}"
+        ]
+      }
+    }
+  ],
+  "buttons": [],
+  "night": {
+    "on": false,
+    "from": 22,
+    "to": 7
+  }
+}
