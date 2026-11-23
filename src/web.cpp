@@ -72,6 +72,10 @@ static void handleState() {
   w["ap"] = apActive();
   w["apSsid"] = dev.name;
   w["clients"] = apClients();
+  if (apActive()) {
+    w["apCh"] = apChannel();
+    w["apWhy"] = apChannelWhy();
+  }
   w["host"] = hostName() + ".local";
   if (timeValid()) {
     time_t t = time(nullptr);

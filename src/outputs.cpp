@@ -117,8 +117,11 @@ static void setupStepper(Output &o, uint8_t idx) {
   o.drv = st;
 }
 
+static uint32_t servoSaid = 0;  // servos déjà signalés au moniteur série
+
 void outputsBegin() {
   uint32_t now = millis();
+  servoSaid = 0;
   for (uint8_t i = 0; i < nOutputs; i++) {
     Output &o = outputs[i];
     o.drv = nullptr;
@@ -387,7 +390,14 @@ void outputsLoop() {
         }
         int us = o.o1 + (int)lroundf((o.o2 - o.o1) * constrain(o.cur, 0.0f, 180.0f) / 180.0f);
         if (o.last == INT32_MIN || abs(us - o.last) >= 2) {
-          if (!sv->attached()) sv->attach(p, o.o1, o.o2, us);
+          if (!sv->attached()) {
+            bool ok = sv->attach(p, o.o1, o.o2, us);
+            if (!(servoSaid & (1UL << i)) || !ok) {  // une fois par démarrage, ou en cas d'échec
+              servoSaid |= 1UL << i;
+              Serial.printf("Servo %s : broche %s, %d us (%d deg)%s\n", o.name.c_str(), pinLabel(p).c_str(), us,
+                            (int)lroundf(constrain(o.cur, 0.0f, 180.0f)), ok ? "" : " -> ECHEC");
+            }
+          }
           sv->writeMicroseconds(us);
           o.last = us;
           o.t1 = now;

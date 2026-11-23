@@ -44,10 +44,11 @@ void halWifiSetup(const String &host) {
   WiFi.setHostname(host.c_str());
   WiFi.setSleep(false);
 }
-void halSoftAP(const String &ssid, const char *pass) {
-  WiFi.softAP(ssid.c_str(), pass);
+void halSoftAP(const String &ssid, const char *pass, uint8_t ch) {
+  WiFi.softAP(ssid.c_str(), pass, ch);
   WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0));
 }
+int halScanAll() { return WiFi.scanNetworks(false, true, false, 120); }
 void halTimeSetup(const char *tz) { configTzTime(tz, "pool.ntp.org", "time.google.com"); }
 void halMdnsUpdate() {}
 
@@ -101,10 +102,11 @@ void halWifiSetup(const String &host) {
   WiFi.hostname(host);
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
 }
-void halSoftAP(const String &ssid, const char *pass) {
+void halSoftAP(const String &ssid, const char *pass, uint8_t ch) {
   WiFi.softAPConfig(IPAddress(192, 168, 4, 1), IPAddress(192, 168, 4, 1), IPAddress(255, 255, 255, 0));
-  WiFi.softAP(ssid.c_str(), pass);
+  WiFi.softAP(ssid.c_str(), pass, ch);
 }
+int halScanAll() { return WiFi.scanNetworks(false, true); }
 void halTimeSetup(const char *tz) { configTime(tz, "pool.ntp.org", "time.google.com"); }
 void halMdnsUpdate() { MDNS.update(); }
 
@@ -132,7 +134,8 @@ void halButtonMode(int pin, bool &activeHigh) {
 
 bool PoclServo::attach(int pin, int minUs, int maxUs, int us) {
   _pin = pin;
-  _att = _s.attach(pin, minUs, maxUs, us) != 0;
+  _s.attach(pin, minUs, maxUs, us);  // renvoie le n° de broche : 0 pour D3, d'où attached()
+  _att = _s.attached();
   return _att;
 }
 void PoclServo::writeMicroseconds(int us) {

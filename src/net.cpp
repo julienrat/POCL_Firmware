@@ -5,6 +5,10 @@
 //    ou dès que le WiFi est perdu depuis 20 s, ou après un appui long sur un bouton.
 //  - Pendant qu'un téléphone est connecté au point d'accès, on arrête de
 //    chercher les autres réseaux (sinon l'ESP change de canal et le décroche).
+//  - Canal du point d'accès : l'ESP n'a qu'une radio. Connecté à la box, il est forcément
+//    sur son canal. Sinon, on scanne avant d'ouvrir : canal d'un réseau mémorisé visible
+//    (on y passera en s'y connectant), à défaut le moins encombré de 1, 6 et 11
+//    (les seuls qui ne se chevauchent pas ; 12 et 13 échappent à certains téléphones).
 #include "pocl.h"
 #include <DNSServer.h>
 #include <time.h>
@@ -21,6 +25,7 @@ static bool staTrying = false;
 static uint32_t tryStart = 0, allowTryUntil = 0, offlineSince = 0, bootMs = 0;
 static bool wasConnected = false, mdnsOn = false;
 static bool firstConnShown = false;
+static uint8_t apCh = 1, apWhy = 3;
 
 String hostName() {
   String h;
@@ -35,18 +40,71 @@ String hostName() {
 bool netOnline() { return WiFi.status() == WL_CONNECTED; }
 bool apActive() { return apOn; }
 uint8_t apClients() { return apOn ? WiFi.softAPgetStationNum() : 0; }
+uint8_t apChannel() { return apOn ? WiFi.channel() : 0; }
+uint8_t apChannelWhy() { return netOnline() ? 0 : apWhy; }
+
+// Encombrement : chaque réseau pèse selon sa force et déborde sur les 4 canaux voisins
+// (canaux espacés de 5 MHz pour 22 MHz de large : 100 %, 77 %, 55 %, 32 %, 9 %).
+// Un réseau sur le canal 3 gêne donc le 1 et le 6.
+static void chooseApChannel() {
+  if (netOnline()) {
+    apCh = WiFi.channel();
+    apWhy = 0;
+    return;
+  }
+  if (staTrying) {  // une connexion en cours empêche le scan ; netLoop la relance ensuite
+    WiFi.disconnect();
+    staTrying = false;
+  }
+  int n = halScanAll();
+  if (n < 0) {
+    apWhy = 3;
+    return;  // on garde le canal précédent
+  }
+  static const uint8_t OVER[5] = {100, 77, 55, 32, 9};
+  static const uint8_t CAND[3] = {1, 6, 11};
+  uint32_t score[3] = {0, 0, 0};
+  int known = 0, knownRssi = -1000;
+  for (int i = 0; i < n; i++) {
+    int ch = WiFi.channel(i), r = WiFi.RSSI(i);
+    if (ch < 1 || ch > 13) continue;
+    for (uint8_t k = 0; k < dev.nnets; k++)
+      if (r > knownRssi && WiFi.SSID(i) == dev.ssid[k]) {
+        known = ch;
+        knownRssi = r;
+      }
+    uint32_t w = constrain(r + 100, 1, 70);  // -30 dBm et plus : 70 ; -99 dBm : 1
+    for (uint8_t j = 0; j < 3; j++) {
+      int d = abs(CAND[j] - ch);
+      if (d < 5) score[j] += w * OVER[d];
+    }
+  }
+  WiFi.scanDelete();
+  if (known) {
+    apCh = known;
+    apWhy = 1;
+  } else {
+    uint8_t best = 0;  // à égalité : 1, puis 6
+    for (uint8_t j = 1; j < 3; j++)
+      if (score[j] < score[best]) best = j;
+    apCh = CAND[best];
+    apWhy = 2;
+  }
+  Serial.printf("Scan WiFi : %d reseaux, canal %u%s\n", n, apCh, known ? " (reseau memorise)" : " (le moins encombre)");
+}
 void apForce(uint32_t ms) { apForceUntil = millis() + ms; }
 bool timeValid() { return time(nullptr) > 1700000000; }
 
 static void startAP() {
   if (apOn) return;
+  chooseApChannel();
   WiFi.mode(dev.nnets ? WIFI_AP_STA : WIFI_AP);
   const char *pass = dev.apPass.length() >= 8 ? dev.apPass.c_str() : nullptr;
-  halSoftAP(dev.name, pass);
+  halSoftAP(dev.name, pass, apCh);
   dns.setErrorReplyCode(DNSReplyCode::NoError);
   dns.start(53, "*", IPAddress(192, 168, 4, 1));  // portail captif : tous les noms -> 192.168.4.1
   apOn = true;
-  Serial.printf("Point d'acces %s actif (192.168.4.1)\n", dev.name.c_str());
+  Serial.printf("Point d'acces %s actif (192.168.4.1), canal %u\n", dev.name.c_str(), apCh);
 }
 
 static void stopAP() {

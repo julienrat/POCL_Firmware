@@ -1,0 +1,48 @@
+# Publie la page de flash en ligne (https://julienrat.github.io/POCL_Firmware/)
+# à chaque envoi sur main qui touche les binaires ou la page.
+# À activer une fois : Settings › Pages › Build and deployment › Source : « GitHub Actions ».
+name: Page de flash en ligne
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "bin/**"
+      - "docs/**"
+      - "web/logo.png"
+      - "tools/build_pages.sh"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # pour dater la version avec le dernier changement de bin/
+      - uses: actions/configure-pages@v5
+      - name: Assembler la page et le manifeste
+        run: bash tools/build_pages.sh _site
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

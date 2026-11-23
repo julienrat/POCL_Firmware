@@ -72,7 +72,8 @@ bool halPinInput(int p);                 // broche utilisable en entrée ?
 bool halFsBegin();                       // monte LittleFS (formate si besoin)
 void halAnalogSetup();                   // lecture analogique sur 0..1023 sur les deux cartes
 void halWifiSetup(const String &host);   // avant WiFi.mode() : nom réseau, pas de mise en veille
-void halSoftAP(const String &ssid, const char *pass);
+void halSoftAP(const String &ssid, const char *pass, uint8_t ch);
+int halScanAll();  // scan bloquant (≈ 2 s) de tous les canaux, réseaux cachés compris
 void halTimeSetup(const char *tz);
 void halMdnsUpdate();
 void halPwmBegin(int pin);               // LED : PWM 1 kHz, valeurs 0..1023

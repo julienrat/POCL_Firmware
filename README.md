@@ -19,7 +19,23 @@ Autres captures : [catalogue de données](docs/catalogue.png) · [envoi MQTT](do
 
 ---
 
-## 1. Installer le firmware : `flash.sh`
+## 1. Installer le firmware
+
+### Le plus simple : en ligne, depuis le navigateur
+
+**👉 https://julienrat.github.io/POCL_Firmware/**
+
+Brancher la carte en USB, ouvrir la page dans **Chrome** ou **Edge** (sur ordinateur), cliquer sur **Installer POCL** : la carte est reconnue (Wemos D1 mini, ESP32, ESP32-C3 Super Mini, ESP32-S2 Mini) et reçoit la dernière version de `bin/`. Rien à installer. La page explique comment préparer chaque carte et traduit les fenêtres de l'outil de flash ([ESP Web Tools](https://esphome.github.io/esp-web-tools/), en anglais) ; la case **Erase device** laissée décochée garde la configuration de l'objet. Elle propose aussi les fichiers de mise à jour sans câble.
+
+<details><summary>Publier ou mettre à jour cette page (mainteneurs)</summary>
+
+- La page est `docs/index.html` ; `tools/build_pages.sh` y ajoute le logo et les binaires de `bin/`, et écrit `manifest.json` (une image complète par puce, écrite à `0x0`) et `firmware/infos.json` (version, tailles).
+- Le workflow `.github/workflows/pages.yml` la publie à chaque `git push` sur `main` qui touche `bin/`, `docs/` ou ces scripts. Pour diffuser un nouveau firmware : `./flash.sh --compile`, puis commit et push de `bin/`.
+- À faire **une seule fois** sur GitHub : *Settings › Pages › Build and deployment › Source* : **GitHub Actions**.
+- Essai sur l'ordinateur : `tools/build_pages.sh /tmp/site && python3 -m http.server -d /tmp/site 8000`, puis http://localhost:8000 dans Chrome.
+</details>
+
+### Avec le script `flash.sh`
 
 Brancher la carte en USB, puis :
 ```bash
@@ -84,6 +100,7 @@ Bon à savoir :
 - le point d'accès reste ouvert **5 minutes après chaque démarrage** (réglable : toujours / seulement sans WiFi). C'est utile quand le réseau de l'établissement empêche les appareils de se voir entre eux : on passe alors par `POCL-XXXX` ;
 - **appui long (3 s) sur n'importe quel bouton** : point d'accès ouvert 10 minutes + infos réseau à l'écran ;
 - tant qu'un téléphone est connecté au point d'accès, l'objet arrête de chercher les autres réseaux (sinon l'ESP8266 change de canal et déconnecte le téléphone) ;
+- **canal du point d'accès** : avant de l'ouvrir, l'objet scanne les réseaux autour de lui (≈ 2 s). Si un réseau mémorisé est à portée, il prend son canal : l'ESP n'a qu'une radio et y passera de toute façon en s'y connectant. Sinon il prend le moins encombré des canaux 1, 6 et 11 (les seuls qui ne se chevauchent pas), en tenant compte de la force des réseaux voisins. Connecté à la box, il est forcément sur le canal de la box. Le canal et la raison du choix s'affichent sur l'accueil de la page web et dans le moniteur série ;
 - l'ESP8266 et l'ESP32 ne gèrent **pas le 5 GHz** ; le WPA2-Entreprise (eduroam…) n'est pas pris en charge.
 
 Quand le téléphone est sur `POCL-XXXX`, il n'a pas Internet : l'objet **sert de relais** pour la recherche de données (c'est automatique, un message le signale).
@@ -258,6 +275,8 @@ Seuls l'ESP32 « classique », l'ESP32-C3 et l'ESP32-S2 sont prévus (pas les S3
 
 La page signale les broches déjà prises, les broches déconseillées pour un composant, et estime la consommation (au-delà de ~450 mA : alimentation 5 V séparée, GND communs).
 
+**Un servo ne bouge pas ?** Le moniteur série (`./flash.sh --moniteur-seul`) affiche, au premier mouvement de chaque servo, la broche et l'impulsion envoyée (`Servo Aiguille : broche D5, 1500 us (90 deg)`). L'outil `./flash.sh --croquis outils/teste_servo` fait bouger le servo sur chaque broche à tour de rôle (0°, 180°, 90°) et indique la broche en cours : on sait tout de suite si le servo, son alimentation et son câblage fonctionnent, et sur quelle broche il est vraiment branché. Taper ensuite `D5` puis un angle pour le piloter à la main ; `./flash.sh` remet POCL, la configuration est conservée.
+
 **Voyant bleu de la carte** (si sa broche est libre : D4 sur Wemos, D2 sur ESP32, 8 sur ESP32-C3, 15 sur ESP32-S2) : clignote vite = point d'accès seul ; lent = recherche du WiFi ; double éclair = une donnée est en erreur ; petit éclair toutes les 3 s = tout va bien.
 
 ## 7. Recettes (partager une configuration)
@@ -326,5 +345,8 @@ pocl_firmware/
 ├── tools/embed_web.py     compresse la page dans src/web_index.h
 ├── examples/              recettes prêtes à charger
 ├── bin/                   firmwares compilés (ESP8266 et ESP32)
-└── docs/                  captures d'écran
+├── docs/                  page de flash en ligne (index.html) et captures d'écran
+├── tools/build_pages.sh   assemble la page de flash en ligne (logo, binaires, manifeste)
+├── .github/workflows/pages.yml   publie la page sur GitHub Pages
+└── outils/                croquis d'aide au montage (trouve_ecran, teste_servo)
 ```

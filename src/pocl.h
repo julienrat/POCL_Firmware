@@ -174,6 +174,8 @@ bool netOnline();
 bool apActive();
 void apForce(uint32_t ms);
 uint8_t apClients();
+uint8_t apChannel();     // canal du point d'accès (0 s'il est fermé)
+uint8_t apChannelWhy();  // 0 box, 1 réseau mémorisé, 2 le moins encombré, 3 scan impossible
 String hostName();
 bool timeValid();
 void wifiConnectNow(int8_t idx);

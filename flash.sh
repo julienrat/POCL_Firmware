@@ -13,6 +13,7 @@
 #    ./flash.sh --compile        compile seulement (binaires copiés dans bin/)
 #    ./flash.sh --bin            flashe le binaire déjà prêt de bin/ sans compiler (rapide)
 #    ./flash.sh --croquis outils/trouve_ecran
+#    ./flash.sh --croquis outils/teste_servo
 #                                flashe un autre croquis (outil) puis ouvre le moniteur série
 #    ./flash.sh --aide
 #

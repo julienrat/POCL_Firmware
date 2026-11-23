@@ -538,7 +538,7 @@ const LIVE = {
   bp: i => { const b = ST.btn[i]; return b ? (b.p ? '<b class="okc">● appuyé</b>' : '○ relâché') + ` <span class="mute">(${b.n} appui${b.n > 1 ? 's' : ''})</span>` : ''; },
   wifi: () => ST.wifi.ok ? `<span class="okc">● connecté</span> à <b>${esc(ST.wifi.ssid)}</b> (${ST.wifi.rssi} dBm)` : '<span class="err">● pas connecté</span>',
   addr: () => ST.wifi.ok ? `<a href="http://${ST.wifi.ip}">http://${ST.wifi.ip}</a> · <a href="http://${esc(ST.wifi.host)}">http://${esc(ST.wifi.host)}</a>` : '–',
-  ap: () => ST.wifi.ap ? `ouvert : <b>${esc(ST.wifi.apSsid)}</b> → http://192.168.4.1 (${ST.wifi.clients} appareil${ST.wifi.clients > 1 ? 's' : ''})` : 'fermé',
+  ap: () => ST.wifi.ap ? `ouvert : <b>${esc(ST.wifi.apSsid)}</b> → http://192.168.4.1 (${ST.wifi.clients} appareil${ST.wifi.clients > 1 ? 's' : ''})${ST.wifi.apCh ? `<br><span class="mute">canal ${ST.wifi.apCh}${[' : celui de la box', ' : celui du réseau mémorisé', ' : le moins encombré'][ST.wifi.apWhy] || ''}</span>` : ''}` : 'fermé',
   mem: () => `${Math.round(ST.heap / 1024)} Ko libres${ST.blk ? ' (bloc max ' + Math.round(ST.blk / 1024) + ' Ko)' : ''} · ${ST.time || 'heure non synchronisée'} · allumé depuis ${Math.round(ST.up / 60)} min`,
   sleep: () => ST.asleep ? '🌙 en veille' : '☀️ actif',
   srcval: (i, k) => { const s = srcLive(k); return s ? 'valeur actuelle : <b>' + esc(s.txt) + '</b>' : ''; },
